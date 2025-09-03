@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
 import { startOfDay, endOfDay, subDays, format } from 'date-fns'
 import { Phone, Users, MessageSquare, CheckCircle, Calendar, TrendingUp, Star, Target } from 'lucide-react'
 

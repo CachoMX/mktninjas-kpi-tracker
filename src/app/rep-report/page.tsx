@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subMonths, subQuarters, subYears } from 'date-fns'
 import { Download, TrendingUp, Award, Calendar, Target, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'

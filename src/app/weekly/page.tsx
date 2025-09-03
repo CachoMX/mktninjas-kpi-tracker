@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
 import { format, startOfWeek, endOfWeek, subWeeks, addWeeks, eachDayOfInterval } from 'date-fns'
 import { ChevronLeft, ChevronRight, TrendingUp, Trophy, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
