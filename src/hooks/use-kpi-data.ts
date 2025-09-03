@@ -9,24 +9,32 @@ export function useKPIData(filters: FilterState) {
   return useQuery({
     queryKey: ['kpi-data', filters],
     queryFn: async (): Promise<SetterKPISubmission[]> => {
-      let query = supabase
-        .from('setter_kpi_submissions')
-        .select('*')
-        .gte('submission_date', format(filters.dateRange.from, 'yyyy-MM-dd'))
-        .lte('submission_date', format(filters.dateRange.to, 'yyyy-MM-dd'))
+      try {
+        let query = supabase
+          .from('setter_kpi_submissions')
+          .select('*')
+          .gte('submission_date', format(filters.dateRange.from, 'yyyy-MM-dd'))
+          .lte('submission_date', format(filters.dateRange.to, 'yyyy-MM-dd'))
 
-      if (filters.setters.length > 0) {
-        query = query.in('full_name', filters.setters)
+        if (filters.setters.length > 0) {
+          query = query.in('full_name', filters.setters)
+        }
+
+        const { data, error } = await query.order('submission_date', { ascending: false })
+
+        if (error) {
+          console.error('Supabase error:', error)
+          return []
+        }
+
+        return data || []
+      } catch (error) {
+        console.error('KPI data fetch error:', error)
+        return []
       }
-
-      const { data, error } = await query.order('submission_date', { ascending: false })
-
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      return data || []
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -86,18 +94,26 @@ export function useSetters() {
   return useQuery({
     queryKey: ['setters'],
     queryFn: async (): Promise<string[]> => {
-      const { data, error } = await supabase
-        .from('setter_kpi_submissions')
-        .select('full_name')
-        .order('full_name')
+      try {
+        const { data, error } = await supabase
+          .from('setter_kpi_submissions')
+          .select('full_name')
+          .order('full_name')
 
-      if (error) {
-        throw new Error(error.message)
+        if (error) {
+          console.error('Supabase setters error:', error)
+          return []
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const uniqueSetters = Array.from(new Set((data as any[])?.map(item => item.full_name) || []))
+        return uniqueSetters
+      } catch (error) {
+        console.error('Setters fetch error:', error)
+        return []
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const uniqueSetters = Array.from(new Set((data as any[])?.map(item => item.full_name) || []))
-      return uniqueSetters
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   })
 }
