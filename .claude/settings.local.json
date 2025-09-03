@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(dir)",
+      "Bash(del README.md)",
+      "Bash(rm:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install @supabase/supabase-js @tanstack/react-query @hookform/resolvers react-hook-form zod lucide-react date-fns recharts framer-motion react-day-picker cmdk sonner @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-select @radix-ui/react-switch @radix-ui/react-tabs @radix-ui/react-toast @radix-ui/react-tooltip @radix-ui/react-popover @radix-ui/react-calendar @radix-ui/react-checkbox @radix-ui/react-label @radix-ui/react-separator @radix-ui/react-slot)",
+      "Bash(npm install:*)",
+      "Bash(npx:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(kill:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
