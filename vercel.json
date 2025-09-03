@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "app/**/*.tsx": {
+      "runtime": "nodejs20.x"
+    },
+    "app/**/*.ts": {
+      "runtime": "nodejs20.x"  
+    }
+  }
+}
