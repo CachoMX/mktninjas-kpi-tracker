@@ -17,6 +17,10 @@ interface LeaderboardTableProps {
 
 type SortableKeys = keyof LeaderboardEntry | 'pickupRate' | 'convoRate'
 
+const safeNumber = (value: number | null | undefined): string => {
+  return (value ?? 0).toLocaleString()
+}
+
 export function LeaderboardTable({ data, title = 'Performance Leaderboard', visibleMetrics = [] }: LeaderboardTableProps) {
   const [sortKey, setSortKey] = useState<SortableKeys>('performance_score')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
@@ -176,17 +180,17 @@ export function LeaderboardTable({ data, title = 'Performance Leaderboard', visi
                     </TableCell>
                     {(visibleMetrics.includes('dials_today') || visibleMetrics.length === 0) && (
                       <TableCell className="text-right font-mono">
-                        {entry.dials_today.toLocaleString()}
+                        {safeNumber(entry.dials_today)}
                       </TableCell>
                     )}
                     {(visibleMetrics.includes('pickups_today') || visibleMetrics.length === 0) && (
                       <>
                         <TableCell className="text-right font-mono">
-                          {entry.pickups_today.toLocaleString()}
+                          {safeNumber(entry.pickups_today)}
                         </TableCell>
                         <TableCell className="text-right">
                           <Badge variant="outline" className="font-mono">
-                            {entry.pickupRate.toFixed(1)}%
+                            {(entry.pickupRate || 0).toFixed(1)}%
                           </Badge>
                         </TableCell>
                       </>
@@ -194,35 +198,35 @@ export function LeaderboardTable({ data, title = 'Performance Leaderboard', visi
                     {(visibleMetrics.includes('one_min_convos') || visibleMetrics.length === 0) && (
                       <>
                         <TableCell className="text-right font-mono">
-                          {entry.one_min_convos.toLocaleString()}
+                          {safeNumber(entry.one_min_convos)}
                         </TableCell>
                         <TableCell className="text-right">
                           <Badge variant="outline" className="font-mono">
-                            {entry.convoRate.toFixed(1)}%
+                            {(entry.convoRate || 0).toFixed(1)}%
                           </Badge>
                         </TableCell>
                       </>
                     )}
                     {(visibleMetrics.includes('dqs_today') || visibleMetrics.length === 0) && (
                       <TableCell className="text-right font-mono">
-                        {entry.dqs_today.toLocaleString()}
+                        {safeNumber(entry.dqs_today)}
                       </TableCell>
                     )}
                     {(visibleMetrics.includes('qualified_appointments') || visibleMetrics.length === 0) && (
                       <TableCell className="text-right font-mono">
-                        {entry.qualified_appointments.toLocaleString()}
+                        {safeNumber(entry.qualified_appointments)}
                       </TableCell>
                     )}
                     {(visibleMetrics.includes('deals_closed') || visibleMetrics.length === 0) && (
                       <TableCell className="text-right font-mono">
-                        {entry.deals_closed.toLocaleString()}
+                        {safeNumber(entry.deals_closed)}
                       </TableCell>
                     )}
                     {(visibleMetrics.includes('performance_score') || visibleMetrics.length === 0) && (
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end space-x-2">
                           <span className="font-mono">
-                            {entry.performance_score.toFixed(1)}
+                            {(entry.performance_score || 0).toFixed(1)}
                           </span>
                           <div
                             className={cn(

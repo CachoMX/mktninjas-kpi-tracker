@@ -30,6 +30,7 @@ export function KPICard({
   className,
 }: KPICardProps) {
   const formatValue = (val: number | string) => {
+    if (val == null) return '0'
     if (typeof val === 'string') return val
     
     switch (format) {
@@ -120,7 +121,7 @@ export function KPICard({
           <div className="flex items-center space-x-1 mt-2">
             <div className={cn('flex items-center space-x-1 text-xs', getTrendColor())}>
               {getTrendIcon()}
-              <span>{Math.abs(trend.value).toFixed(1)}%</span>
+              <span>{Math.abs(trend.value || 0).toFixed(1)}%</span>
             </div>
             <span className="text-xs text-muted-foreground">vs {trend.period}</span>
           </div>

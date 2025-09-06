@@ -16,6 +16,10 @@ interface FunnelChartProps {
   height?: number
 }
 
+const safeNumber = (value: number | null | undefined): string => {
+  return (value ?? 0).toLocaleString()
+}
+
 export function FunnelChart({
   title,
   description,
@@ -41,7 +45,7 @@ export function FunnelChart({
             const width = calculateWidth(stage.value)
             const nextStage = stages[index + 1]
             const conversionRate = nextStage 
-              ? ((nextStage.value / stage.value) * 100).toFixed(1) 
+              ? (((nextStage.value || 0) / (stage.value || 1)) * 100).toFixed(1) 
               : null
 
             return (
@@ -50,11 +54,11 @@ export function FunnelChart({
                   <span className="text-sm font-medium">{stage.name}</span>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-bold">
-                      {stage.value.toLocaleString()}
+                      {safeNumber(stage.value)}
                     </span>
                     {stage.rate && (
                       <span className="text-xs text-muted-foreground">
-                        ({stage.rate.toFixed(1)}%)
+                        ({(stage.rate || 0).toFixed(1)}%)
                       </span>
                     )}
                   </div>
@@ -68,7 +72,7 @@ export function FunnelChart({
                         backgroundColor: stage.color,
                       }}
                     >
-                      {width > 30 && stage.value.toLocaleString()}
+                      {width > 30 && safeNumber(stage.value)}
                     </div>
                   </div>
                   {conversionRate && (
@@ -85,7 +89,7 @@ export function FunnelChart({
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Overall Conversion:</span>
             <span>
-              {((stages[stages.length - 1]?.value / stages[0]?.value) * 100).toFixed(1)}%
+              {(((stages[stages.length - 1]?.value || 0) / (stages[0]?.value || 1)) * 100).toFixed(1)}%
             </span>
           </div>
         </div>
