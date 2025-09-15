@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { startOfDay, endOfDay, subDays, format } from 'date-fns'
 import { Phone, Users, MessageSquare, CheckCircle, Calendar, TrendingUp, Star, Target } from 'lucide-react'
 
@@ -185,7 +185,7 @@ export default function DashboardPage() {
     // Only include selected metrics, allow zero values to show
     const selectedStages = allStages
       .filter(stage => filters.metrics.includes(stage.key))
-      .map(({ key: _, ...stage }) => stage) // Remove the key property
+      .map(({ key: _key, ...stage }) => stage) // Remove the key property
     
     return selectedStages
   }, [dashboardStats, filters.metrics])
@@ -287,6 +287,25 @@ export default function DashboardPage() {
               <div key={i} className="h-32 bg-muted rounded-lg" />
             ))}
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+        </div>
+        <div className="p-8 text-center">
+          <p className="text-red-500">Error loading data: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
         </div>
       </div>
     )
