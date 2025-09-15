@@ -23,7 +23,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 // Test the connection immediately
 if (typeof window !== 'undefined') {
   console.log('🧪 Testing Supabase connection from client...')
-  supabase
+  void supabase
     .from('setter_kpi_submissions')
     .select('*')
     .limit(1)
@@ -34,7 +34,7 @@ if (typeof window !== 'undefined') {
         console.log('✅ Client Supabase test successful:', data?.length || 0, 'records')
       }
     })
-    .catch(err => {
+    .catch((err: unknown) => {
       console.error('❌ Client Supabase test error:', err)
     })
 }
