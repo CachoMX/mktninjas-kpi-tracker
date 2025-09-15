@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { SetterKPISubmission } from '@/types/database'
 
 export default function SupabaseTestPage() {
   const [testResults, setTestResults] = useState<{ test: string; result: unknown }[]>([])
@@ -46,7 +47,7 @@ export default function SupabaseTestPage() {
 
         // Test 3: Check date range
         if (allData && allData.length > 0) {
-          const dates = allData.map(r => r.submission_date).sort()
+          const dates = allData.map((r: SetterKPISubmission) => r.submission_date).sort()
           console.log('📅 Date range:', dates[0], 'to', dates[dates.length - 1])
         }
 

@@ -185,7 +185,8 @@ export default function DashboardPage() {
     // Only include selected metrics, allow zero values to show
     const selectedStages = allStages
       .filter(stage => filters.metrics.includes(stage.key))
-      .map(({ key: _key, ...stage }) => stage) // Remove the key property // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .map(({ key: _key, ...stage }) => stage) // Remove the key property
     
     return selectedStages
   }, [dashboardStats, filters.metrics])
