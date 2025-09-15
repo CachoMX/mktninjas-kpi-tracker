@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { format, eachDayOfInterval, startOfMonth, endOfMonth, getDay } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { Info } from 'lucide-react'
 
 interface ActivityData {
   date: string
@@ -79,7 +80,38 @@ export function HeatmapCalendar({
     <TooltipProvider>
       <Card>
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              {title}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <div className="space-y-2">
+                    <div className="font-medium">Activity Score Formula:</div>
+                    <div className="text-xs space-y-1">
+                      <div>• Dials × 1</div>
+                      <div>• Pickups × 3</div>
+                      <div>• 1min+ Convos × 5</div>
+                      <div>• DQs × 8</div>
+                      <div>• Follow Ups × 2</div>
+                      <div>• Appointments × 10</div>
+                      <div>• Discovery Calls × 8</div>
+                      <div>• Showed Up × 15</div>
+                      <div>• Rescheduled × 3</div>
+                      <div>• Full Territory × 20</div>
+                      <div>• Deals Closed × 50</div>
+                      <div>• Performance Score × 1</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Score depends on selected metrics in filters
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </CardTitle>
+          </div>
           {description && <CardDescription>{description}</CardDescription>}
           <div className="text-sm text-muted-foreground">
             {format(month, 'MMMM yyyy')}
@@ -129,7 +161,10 @@ export function HeatmapCalendar({
                           {format(day, 'MMM dd, yyyy')}
                         </div>
                         <div>
-                          Activity: {activity?.value || 0}
+                          Activity Score: {activity?.value || 0}
+                        </div>
+                        <div className="text-muted-foreground mt-1">
+                          Combined score from selected metrics
                         </div>
                       </div>
                     </TooltipContent>
