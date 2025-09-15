@@ -57,7 +57,7 @@ export default function DashboardPage() {
 
         setKpiData(data || [])
         
-        const uniqueSetters = Array.from(new Set((data || []).map(item => item.full_name)))
+        const uniqueSetters = Array.from(new Set((data || []).map((item: SetterKPISubmission) => item.full_name)))
         setSetters(uniqueSetters)
         setLoading(false)
 
@@ -185,7 +185,7 @@ export default function DashboardPage() {
     // Only include selected metrics, allow zero values to show
     const selectedStages = allStages
       .filter(stage => filters.metrics.includes(stage.key))
-      .map(({ key: _key, ...stage }) => stage) // Remove the key property
+      .map(({ key: _key, ...stage }) => stage) // Remove the key property // eslint-disable-line @typescript-eslint/no-unused-vars
     
     return selectedStages
   }, [dashboardStats, filters.metrics])
