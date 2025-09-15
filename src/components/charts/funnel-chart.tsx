@@ -24,9 +24,12 @@ export function FunnelChart({
   title,
   description,
   stages,
-  height = 300,
+  height,
 }: FunnelChartProps) {
   const maxValue = Math.max(...stages.map(s => s.value))
+  
+  // Calculate dynamic height based on number of stages with a reasonable maximum
+  const dynamicHeight = height || Math.max(300, Math.min(stages.length * 60 + 100, 600))
 
   const calculateWidth = (value: number) => {
     const baseWidth = (value / maxValue) * 100
@@ -34,19 +37,23 @@ export function FunnelChart({
   }
 
   return (
-    <Card>
+    <Card className="h-fit max-h-[700px] overflow-hidden">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4" style={{ height }}>
+      <CardContent className="overflow-y-auto max-h-[600px]">
+        <div className="space-y-4" style={{ minHeight: Math.min(dynamicHeight, 500) }}>
           {stages.map((stage, index) => {
             const width = calculateWidth(stage.value)
             const nextStage = stages[index + 1]
-            const conversionRate = nextStage 
-              ? (((nextStage.value || 0) / (stage.value || 1)) * 100).toFixed(1) 
+            
+            // Only show conversion rate if next stage has lower or similar value (logical funnel)
+            const conversionRate = nextStage && stage.value > 0
+              ? (((nextStage.value || 0) / stage.value) * 100).toFixed(1) 
               : null
+            
+            const showConversionRate = conversionRate && parseFloat(conversionRate) <= 100
 
             return (
               <div key={stage.name} className="space-y-2">
@@ -75,7 +82,7 @@ export function FunnelChart({
                       {width > 30 && safeNumber(stage.value)}
                     </div>
                   </div>
-                  {conversionRate && (
+                  {showConversionRate && (
                     <div className="absolute -bottom-5 right-0 text-xs text-muted-foreground">
                       {conversionRate}% →
                     </div>
@@ -85,14 +92,19 @@ export function FunnelChart({
             )
           })}
         </div>
-        <div className="mt-6 pt-4 border-t">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Overall Conversion:</span>
-            <span>
-              {(((stages[stages.length - 1]?.value || 0) / (stages[0]?.value || 1)) * 100).toFixed(1)}%
-            </span>
+        {stages.length > 1 && (
+          <div className="mt-6 pt-4 border-t">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Overall Conversion ({stages[0]?.name} → {stages[stages.length - 1]?.name}):</span>
+              <span>
+                {stages[0]?.value > 0 
+                  ? (((stages[stages.length - 1]?.value || 0) / stages[0].value) * 100).toFixed(1)
+                  : '0.0'
+                }%
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   )

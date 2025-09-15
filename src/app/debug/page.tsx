@@ -44,7 +44,7 @@ export default function DebugPage() {
         setData(allData || [])
 
         // Calculate activity scores for each record
-        const calculatedActivity = (allData || []).map(record => {
+        const calculatedActivity = (allData || []).map((record: DebugRecord) => {
           // Default selected metrics for testing
           const selectedMetrics = ['dials_today', 'pickups_today', 'one_min_convos', 'dqs_today', 'qualified_appointments', 'deals_closed', 'performance_score']
           

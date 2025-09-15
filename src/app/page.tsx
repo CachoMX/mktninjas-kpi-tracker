@@ -18,7 +18,6 @@ import { FilterState, LeaderboardEntry, TrendData, SetterKPISubmission } from '@
 import { supabase } from '@/lib/supabase'
 
 export default function DashboardPage() {
-  console.log('🚀 DashboardPage component initialized')
   
   const [filters, setFilters] = useState<FilterState>({
     setters: [],
@@ -29,72 +28,48 @@ export default function DashboardPage() {
     metrics: ['dials_today', 'pickups_today', 'one_min_convos', 'dqs_today', 'qualified_appointments', 'deals_closed', 'performance_score'],
   })
 
-  // Replace React Query with direct state management
+  // Alternative approach: Use a flag to prevent multiple fetches
   const [kpiData, setKpiData] = useState<SetterKPISubmission[]>([])
   const [setters, setSetters] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [fetchStarted, setFetchStarted] = useState(false)
 
   const dashboardStats = useDashboardStats(kpiData)
   
-  // Single useEffect to fetch data (copying EXACT working pattern from debug page)
-  useEffect(() => {
-    console.log('🚀 Main dashboard useEffect triggered')
+  // Fetch data once when component first renders
+  if (!fetchStarted && loading === true && kpiData.length === 0) {
+    setFetchStarted(true)
     
     const fetchData = async () => {
       try {
-        console.log('🔍 Fetching all data from Supabase...')
-        setLoading(true)
-        
-        // Fetch all data without filters first (same as debug page)
-        const { data: allData, error: allError } = await supabase
+        const { data, error } = await supabase
           .from('setter_kpi_submissions')
           .select('*')
           .order('submission_date', { ascending: false })
         
-        if (allError) {
-          console.error('❌ Error:', allError)
+        if (error) {
+          console.error('Error fetching KPI data:', error)
+          setError(error.message)
           setLoading(false)
           return
         }
 
-        console.log('✅ Raw data fetched:', allData?.length || 0, 'records')
+        setKpiData(data || [])
         
-        // Apply date range filters
-        const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd')
-        const toDate = format(filters.dateRange.to, 'yyyy-MM-dd')
-        
-        let filteredData = (allData || []).filter(record => 
-          record.submission_date >= fromDate && record.submission_date <= toDate
-        )
-        
-        // Apply setter filters
-        if (filters.setters.length > 0) {
-          filteredData = filteredData.filter(record => 
-            filters.setters.includes(record.full_name)
-          )
-        }
-        
-        console.log('✅ Filtered data:', filteredData.length, 'records')
-        console.log('📅 Date range:', fromDate, 'to', toDate)
-        
-        setKpiData(filteredData)
-        console.log('📋 kpiData updated, length:', filteredData.length)
-
-        // Get unique setters from all data (same as debug page)
-        const uniqueSetters = Array.from(new Set((allData || []).map(item => item.full_name)))
+        const uniqueSetters = Array.from(new Set((data || []).map(item => item.full_name)))
         setSetters(uniqueSetters)
-        console.log('✅ Setters loaded:', uniqueSetters.length, 'unique setters')
+        setLoading(false)
 
       } catch (err) {
-        console.error('❌ Fetch error:', err)
-      } finally {
+        console.error('Error fetching KPI data:', err)
+        setError(err instanceof Error ? err.message : 'Unknown error')
         setLoading(false)
-        console.log('🏁 Main dashboard fetchData complete')
       }
     }
 
     fetchData()
-  }, [filters.dateRange.from, filters.dateRange.to, filters.setters])
+  }
 
   const trendData = useMemo((): TrendData[] => {
     if (!kpiData) return []
@@ -300,7 +275,7 @@ export default function DashboardPage() {
     setFilters(prev => ({ ...prev, ...updates }))
   }
 
-  if (loading || loading) {
+  if (loading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">

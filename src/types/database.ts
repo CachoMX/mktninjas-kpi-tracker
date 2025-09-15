@@ -27,6 +27,7 @@ export interface SetterKPISubmission {
   discovery_calls_scheduled: number
   prospects_showed_up: number
   prospects_rescheduled: number
+  prospects_full_rterritory: number
   live_calls_today: number
   offers_made: number
   deals_closed: number
@@ -39,9 +40,10 @@ export interface SetterKPISubmission {
 
 export interface KPIMetric {
   label: string
-  key: keyof SetterKPISubmission
+  key: keyof SetterKPISubmission | 'showRate' | 'pickupRate'
   color: string
   format?: 'number' | 'percentage' | 'currency'
+  calculated?: boolean
 }
 
 export interface FilterState {
@@ -60,7 +62,12 @@ export interface DashboardStats {
   totalConvos: number
   convoRate: number
   totalDQs: number
+  totalFollowUps: number
   totalAppointments: number
+  totalDiscoveryCalls: number
+  totalShowedUp: number
+  totalRescheduled: number
+  totalFullTerritory: number
   totalDeals: number
   averagePerformanceScore: number
   showRate: number
