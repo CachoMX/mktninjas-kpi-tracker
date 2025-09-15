@@ -3,11 +3,25 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
+interface DebugRecord {
+  [key: string]: unknown
+  submission_date: string
+  full_name: string
+  dials_today: number
+  pickups_today: number
+  one_min_convos: number
+  dqs_today: number
+  qualified_appointments: number
+  deals_closed: number
+  performance_score: number
+  calculated_activity_score?: number
+}
+
 export default function DebugPage() {
-  const [data, setData] = useState<any[]>([])
+  const [data, setData] = useState<DebugRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activityData, setActivityData] = useState<any[]>([])
+  const [activityData, setActivityData] = useState<DebugRecord[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,10 +86,10 @@ export default function DebugPage() {
     if (!acc[date]) {
       acc[date] = { date, totalScore: 0, records: [] }
     }
-    acc[date].totalScore += curr.calculated_activity_score
+    acc[date].totalScore += curr.calculated_activity_score || 0
     acc[date].records.push(curr)
     return acc
-  }, {} as Record<string, { date: string; totalScore: number; records: any[] }>)
+  }, {} as Record<string, { date: string; totalScore: number; records: DebugRecord[] }>)
 
   return (
     <div className="p-8 space-y-8">

@@ -4,8 +4,20 @@ import { useState, useEffect, useMemo } from 'react'
 import { HeatmapCalendar } from '@/components/charts/heatmap-calendar'
 import { supabase } from '@/lib/supabase'
 
+interface TestRecord {
+  submission_date: string
+  full_name: string
+  dials_today: number
+  pickups_today: number
+  one_min_convos: number
+  dqs_today: number
+  qualified_appointments: number
+  deals_closed: number
+  performance_score: number
+}
+
 export default function HeatmapTestPage() {
-  const [realData, setRealData] = useState<any[]>([])
+  const [realData, setRealData] = useState<TestRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -52,7 +64,7 @@ export default function HeatmapTestPage() {
     }
 
     // Calculate activity scores for each day using REAL data
-    const dailyActivity = realData.reduce((acc: any, curr: any) => {
+    const dailyActivity = realData.reduce((acc: Record<string, { date: string; value: number }>, curr: TestRecord) => {
       // Convert timestamp to simple date format (YYYY-MM-DD)
       const rawDate = curr.submission_date
       const date = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate
@@ -116,9 +128,9 @@ export default function HeatmapTestPage() {
             <p><strong>Top Activity Days:</strong></p>
             <div className="max-h-48 overflow-y-auto">
               {activityData
-                .sort((a: any, b: any) => b.value - a.value)
+                .sort((a, b) => b.value - a.value)
                 .slice(0, 10)
-                .map((day: any) => (
+                .map((day) => (
                   <div key={day.date} className="ml-4 text-sm">
                     {day.date}: <span className="font-bold">{day.value}</span> activity points
                   </div>

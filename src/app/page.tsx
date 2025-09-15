@@ -33,7 +33,6 @@ export default function DashboardPage() {
   const [kpiData, setKpiData] = useState<SetterKPISubmission[]>([])
   const [setters, setSetters] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const dashboardStats = useDashboardStats(kpiData)
   
@@ -45,7 +44,6 @@ export default function DashboardPage() {
       try {
         console.log('🔍 Fetching all data from Supabase...')
         setLoading(true)
-        setError(null)
         
         // Fetch all data without filters first (same as debug page)
         const { data: allData, error: allError } = await supabase
@@ -55,7 +53,6 @@ export default function DashboardPage() {
         
         if (allError) {
           console.error('❌ Error:', allError)
-          setError(allError.message)
           setLoading(false)
           return
         }
@@ -90,7 +87,6 @@ export default function DashboardPage() {
 
       } catch (err) {
         console.error('❌ Fetch error:', err)
-        setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
         setLoading(false)
         console.log('🏁 Main dashboard fetchData complete')
@@ -238,12 +234,15 @@ export default function DashboardPage() {
       return acc
     }, {} as Record<string, LeaderboardEntry>)
 
-    return Object.values(aggregated).map((entry, index) => ({
+    return Object.values(aggregated).map((entry) => ({
       ...entry,
-      rank: index + 1,
+      rank: 1,
       pickupRate: entry.dials_today > 0 ? (entry.pickups_today / entry.dials_today) * 100 : 0,
       convoRate: entry.pickups_today > 0 ? (entry.one_min_convos / entry.pickups_today) * 100 : 0,
-    })).sort((a, b) => b.performance_score - a.performance_score)
+    })).sort((a, b) => b.performance_score - a.performance_score).map((entry, index) => ({
+      ...entry,
+      rank: index + 1,
+    }))
   }, [kpiData])
 
   const activityData = useMemo(() => {
