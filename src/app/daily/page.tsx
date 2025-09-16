@@ -42,8 +42,6 @@ export default function DailySummaryPage() {
   const [averageData, setAverageData] = useState<SetterKPISubmission[]>([])
   const [loading, setLoading] = useState(true)
 
-  const dayStart = startOfDay(selectedDate)
-  const dayEnd = endOfDay(selectedDate)
 
   // Use useEffect to refetch data when selectedDate changes
   useEffect(() => {
@@ -106,7 +104,7 @@ export default function DailySummaryPage() {
     }
 
     fetchData()
-  }, [selectedDate]) // Re-run when selectedDate changes
+  }, [selectedDate, averageData.length]) // Re-run when selectedDate changes
 
   const dailyStats = useDashboardStats(dailyData || [])
 
@@ -164,7 +162,7 @@ export default function DailySummaryPage() {
       acc[key].recordCount += 1
       
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, SetterKPISubmission & { recordCount: number }>)
 
     // Convert back to array and calculate rates
     return Object.values(groupedBySetter).map(setter => {
