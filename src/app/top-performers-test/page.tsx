@@ -113,6 +113,8 @@ export default function TopPerformersTestPage() {
           const sortedData = dataWithCalculatedMetrics.sort((a, b) => b.dials - a.dials).slice(0, 10)
           
           console.log('🏆 Top Performers:', sortedData)
+          console.log('🔍 Sample performer data structure:', sortedData[0])
+          console.log('🔍 Data keys available:', sortedData[0] ? Object.keys(sortedData[0]) : 'No data')
           setTopPerformersData(sortedData)
         }
 
@@ -211,12 +213,39 @@ export default function TopPerformersTestPage() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Top Performers Data for Chart</h2>
-        <div className="bg-blue-50 p-4 rounded">
-          <p><strong>Chart Data Structure:</strong></p>
-          <pre className="mt-2 text-sm overflow-auto">
-            {JSON.stringify(topPerformersData.slice(0, 5), null, 2)}
-          </pre>
+        <h2 className="text-xl font-semibold mb-4">Chart Debug Information</h2>
+        <div className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded">
+            <p><strong>Chart Data Structure (First 3 performers):</strong></p>
+            <pre className="mt-2 text-sm overflow-auto max-h-64">
+              {JSON.stringify(topPerformersData.slice(0, 3), null, 2)}
+            </pre>
+          </div>
+          
+          <div className="bg-yellow-50 p-4 rounded">
+            <p><strong>Chart Props Being Passed:</strong></p>
+            <div className="mt-2 space-y-1 text-sm">
+              <p><strong>Data length:</strong> {topPerformersData.length}</p>
+              <p><strong>xAxisKey:</strong> "name"</p>
+              <p><strong>Bars configured:</strong> dials, pickups, convos, dqs, appointments, deals</p>
+              <p><strong>Sample data keys:</strong> {topPerformersData[0] ? Object.keys(topPerformersData[0]).join(', ') : 'No data'}</p>
+            </div>
+          </div>
+          
+          <div className="bg-green-50 p-4 rounded">
+            <p><strong>Sample Values Check:</strong></p>
+            {topPerformersData[0] && (
+              <div className="mt-2 text-sm space-y-1">
+                <p><strong>Name:</strong> {topPerformersData[0].name}</p>
+                <p><strong>Dials:</strong> {topPerformersData[0].dials}</p>
+                <p><strong>Pickups:</strong> {topPerformersData[0].pickups}</p>
+                <p><strong>Convos:</strong> {topPerformersData[0].convos}</p>
+                <p><strong>DQs:</strong> {topPerformersData[0].dqs}</p>
+                <p><strong>Appointments:</strong> {topPerformersData[0].appointments}</p>
+                <p><strong>Deals:</strong> {topPerformersData[0].deals}</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
