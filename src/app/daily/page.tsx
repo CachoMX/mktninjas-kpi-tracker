@@ -61,7 +61,7 @@ export default function DailySummaryPage() {
           // Filter for the selected date (same logic as test page)
           const targetDate = format(selectedDate, 'yyyy-MM-dd')
           
-          dayData = allRecentData.filter(item => {
+          dayData = (allRecentData as SetterKPISubmission[]).filter(item => {
             const itemDate = item.submission_date.includes('T') 
               ? item.submission_date.split('T')[0] 
               : item.submission_date
