@@ -42,7 +42,7 @@ export default function DailyTestPage() {
 
         // Extract unique dates
         if (data && data.length > 0) {
-          const dates = data.map(item => {
+          const dates = (data as SetterKPISubmission[]).map(item => {
             const dateStr = item.submission_date.includes('T') 
               ? item.submission_date.split('T')[0] 
               : item.submission_date
