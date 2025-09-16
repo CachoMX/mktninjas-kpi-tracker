@@ -74,7 +74,16 @@ export default function DashboardPage() {
   const trendData = useMemo((): TrendData[] => {
     if (!kpiData) return []
 
-    const groupedData = kpiData.reduce((acc, curr) => {
+    // Filter data by date range first
+    const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd')
+    const toDate = format(filters.dateRange.to, 'yyyy-MM-dd')
+    
+    const filteredData = kpiData.filter(item => {
+      const itemDate = item.submission_date.includes('T') ? item.submission_date.split('T')[0] : item.submission_date
+      return itemDate >= fromDate && itemDate <= toDate
+    })
+
+    const groupedData = filteredData.reduce((acc, curr) => {
       const date = curr.submission_date
       if (!acc[date]) {
         acc[date] = {
@@ -116,12 +125,21 @@ export default function DashboardPage() {
     }))
 
     return dataWithCalculatedMetrics.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [kpiData])
+  }, [kpiData, filters.dateRange])
 
   const setterPerformanceData = useMemo(() => {
     if (!kpiData) return []
 
-    const grouped = kpiData.reduce((acc, curr) => {
+    // Filter data by date range first
+    const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd')
+    const toDate = format(filters.dateRange.to, 'yyyy-MM-dd')
+    
+    const filteredData = kpiData.filter(item => {
+      const itemDate = item.submission_date.includes('T') ? item.submission_date.split('T')[0] : item.submission_date
+      return itemDate >= fromDate && itemDate <= toDate
+    })
+
+    const grouped = filteredData.reduce((acc, curr) => {
       const name = curr.full_name
       if (!acc[name]) {
         acc[name] = {
@@ -163,7 +181,7 @@ export default function DashboardPage() {
     }))
     
     return dataWithCalculatedMetrics.sort((a, b) => b.dials - a.dials).slice(0, 10)
-  }, [kpiData])
+  }, [kpiData, filters.dateRange])
 
   const funnelData = useMemo(() => {
     // Define funnel stages in logical order (highest to lowest volume)
@@ -194,7 +212,16 @@ export default function DashboardPage() {
   const leaderboardData = useMemo((): LeaderboardEntry[] => {
     if (!kpiData) return []
 
-    const aggregated = kpiData.reduce((acc, curr) => {
+    // Filter data by date range first
+    const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd')
+    const toDate = format(filters.dateRange.to, 'yyyy-MM-dd')
+    
+    const filteredData = kpiData.filter(item => {
+      const itemDate = item.submission_date.includes('T') ? item.submission_date.split('T')[0] : item.submission_date
+      return itemDate >= fromDate && itemDate <= toDate
+    })
+
+    const aggregated = filteredData.reduce((acc, curr) => {
       const key = curr.full_name
       if (!acc[key]) {
         acc[key] = { ...curr, rank: 0, pickupRate: 0, convoRate: 0 }
@@ -219,7 +246,7 @@ export default function DashboardPage() {
       ...entry,
       rank: index + 1,
     }))
-  }, [kpiData])
+  }, [kpiData, filters.dateRange])
 
   const activityData = useMemo(() => {
     console.log('📊 Activity data calculation - kpiData length:', kpiData.length)
@@ -230,8 +257,17 @@ export default function DashboardPage() {
       return []
     }
     
+    // Filter data by date range first
+    const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd')
+    const toDate = format(filters.dateRange.to, 'yyyy-MM-dd')
+    
+    const filteredData = kpiData.filter(item => {
+      const itemDate = item.submission_date.includes('T') ? item.submission_date.split('T')[0] : item.submission_date
+      return itemDate >= fromDate && itemDate <= toDate
+    })
+    
     // Group real data by date and calculate activity score based on selected metrics
-    const dailyActivity = kpiData.reduce((acc, curr) => {
+    const dailyActivity = filteredData.reduce((acc, curr) => {
       // Convert timestamp to simple date format (YYYY-MM-DD) - same fix as test page
       const rawDate = curr.submission_date
       const date = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate
