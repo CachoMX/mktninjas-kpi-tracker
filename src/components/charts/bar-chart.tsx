@@ -42,7 +42,6 @@ export function CustomBarChart({
             <BarChart
               data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              layout={orientation === 'horizontal' ? 'horizontal' : 'vertical'}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis 
