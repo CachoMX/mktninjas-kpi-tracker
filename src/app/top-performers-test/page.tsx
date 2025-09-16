@@ -144,14 +144,31 @@ export default function TopPerformersTestPage() {
       <div>
         <h2 className="text-xl font-semibold mb-4">Top Performers Chart</h2>
         <div className="bg-white border rounded p-4">
-          <CustomBarChart
-            title="Top Performers"
-            subtitle="Sorted by total dials"
-            data={topPerformersData}
-            xAxisDataKey="name"
-            yAxisDataKey="dials"
-            height={400}
-          />
+          {loading ? (
+            <div className="flex items-center justify-center h-96">
+              <p className="text-gray-500">Loading chart...</p>
+            </div>
+          ) : topPerformersData.length > 0 ? (
+            <CustomBarChart
+              title="Top Performers"
+              description="Sorted by total dials - last 30 days"
+              data={topPerformersData}
+              bars={[
+                { dataKey: 'dials', fill: '#2563eb', name: 'Dials' },
+                { dataKey: 'pickups', fill: '#059669', name: 'Pickups' },
+                { dataKey: 'convos', fill: '#d97706', name: '1min+ Convos' },
+                { dataKey: 'dqs', fill: '#dc2626', name: 'DQs' },
+                { dataKey: 'appointments', fill: '#7c3aed', name: 'Appointments' },
+                { dataKey: 'deals', fill: '#f59e0b', name: 'Deals' },
+              ]}
+              height={400}
+              xAxisKey="name"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-96">
+              <p className="text-gray-500">No data available for chart</p>
+            </div>
+          )}
         </div>
       </div>
 
