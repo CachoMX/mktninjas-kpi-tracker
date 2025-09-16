@@ -34,7 +34,4 @@ if (typeof window !== 'undefined') {
         console.log('✅ Client Supabase test successful:', data?.length || 0, 'records')
       }
     })
-    .catch((err: unknown) => {
-      console.error('❌ Client Supabase test error:', err)
-    })
 }
