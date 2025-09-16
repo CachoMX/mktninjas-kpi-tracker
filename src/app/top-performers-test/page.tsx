@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SetterKPISubmission } from '@/types/database'
 import { CustomBarChart } from '@/components/charts/bar-chart'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { format } from 'date-fns'
 
 interface TopPerformerData {
@@ -157,11 +158,6 @@ export default function TopPerformersTestPage() {
               data={topPerformersData}
               bars={[
                 { dataKey: 'dials', fill: '#2563eb', name: 'Dials' },
-                { dataKey: 'pickups', fill: '#059669', name: 'Pickups' },
-                { dataKey: 'convos', fill: '#d97706', name: '1min+ Convos' },
-                { dataKey: 'dqs', fill: '#dc2626', name: 'DQs' },
-                { dataKey: 'appointments', fill: '#7c3aed', name: 'Appointments' },
-                { dataKey: 'deals', fill: '#f59e0b', name: 'Deals' },
               ]}
               height={400}
               xAxisKey="name"
@@ -169,6 +165,31 @@ export default function TopPerformersTestPage() {
           ) : (
             <div className="flex items-center justify-center h-96">
               <p className="text-gray-500">No data available for chart</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Basic Recharts Test (For Comparison)</h2>
+        <div className="bg-white border rounded p-4">
+          {loading ? (
+            <div className="flex items-center justify-center h-96">
+              <p className="text-gray-500">Loading chart...</p>
+            </div>
+          ) : topPerformersData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={topPerformersData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="dials" fill="#2563eb" name="Dials" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-96">
+              <p className="text-gray-500">No data available for basic chart</p>
             </div>
           )}
         </div>
