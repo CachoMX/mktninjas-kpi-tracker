@@ -35,7 +35,20 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [fetchStarted, setFetchStarted] = useState(false)
 
-  const dashboardStats = useDashboardStats(kpiData)
+  // Filter data by date range for KPI widgets
+  const filteredKpiData = useMemo(() => {
+    if (!kpiData || kpiData.length === 0) return []
+    
+    const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd')
+    const toDate = format(filters.dateRange.to, 'yyyy-MM-dd')
+    
+    return kpiData.filter(item => {
+      const itemDate = item.submission_date.includes('T') ? item.submission_date.split('T')[0] : item.submission_date
+      return itemDate >= fromDate && itemDate <= toDate
+    })
+  }, [kpiData, filters.dateRange])
+
+  const dashboardStats = useDashboardStats(filteredKpiData)
   
   // Fetch data once when component first renders
   if (!fetchStarted && loading === true && kpiData.length === 0) {
