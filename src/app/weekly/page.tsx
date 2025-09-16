@@ -171,12 +171,25 @@ export default function WeeklySummaryPage() {
         <KPICard
           title="Total Pickups"
           value={currentWeekStats.totalPickups}
-          subtitle={`${currentWeekStats.pickupRate.toFixed(1)}% rate`}
+          subtitle={`${currentWeekStats.pickupRate.toFixed(1)}% pickup rate`}
           trend={calculateTrend(currentWeekStats.totalPickups, previousWeekStats.totalPickups)}
           color="green"
         />
         <KPICard
-          title="Appointments"
+          title="1min+ Conversations"
+          value={currentWeekStats.totalConvos}
+          subtitle={`${currentWeekStats.convoRate.toFixed(1)}% conversion rate`}
+          trend={calculateTrend(currentWeekStats.totalConvos, previousWeekStats.totalConvos)}
+          color="orange"
+        />
+        <KPICard
+          title="Total DQs"
+          value={currentWeekStats.totalDQs}
+          trend={calculateTrend(currentWeekStats.totalDQs, previousWeekStats.totalDQs)}
+          color="red"
+        />
+        <KPICard
+          title="Qualified Appointments"
           value={currentWeekStats.totalAppointments}
           trend={calculateTrend(currentWeekStats.totalAppointments, previousWeekStats.totalAppointments)}
           color="purple"
@@ -186,6 +199,43 @@ export default function WeeklySummaryPage() {
           value={currentWeekStats.totalDeals}
           trend={calculateTrend(currentWeekStats.totalDeals, previousWeekStats.totalDeals)}
           color="cyan"
+        />
+        <KPICard
+          title="Avg Performance Score"
+          value={currentWeekStats.averagePerformanceScore.toFixed(1)}
+          trend={calculateTrend(currentWeekStats.averagePerformanceScore, previousWeekStats.averagePerformanceScore)}
+          color="yellow"
+        />
+        <KPICard
+          title="Follow Ups"
+          value={currentWeekStats.totalFollowUps}
+          trend={calculateTrend(currentWeekStats.totalFollowUps, previousWeekStats.totalFollowUps)}
+          color="pink"
+        />
+        <KPICard
+          title="Discovery Calls"
+          value={currentWeekStats.totalDiscoveryCalls}
+          trend={calculateTrend(currentWeekStats.totalDiscoveryCalls, previousWeekStats.totalDiscoveryCalls)}
+          color="indigo"
+        />
+        <KPICard
+          title="Showed Up"
+          value={currentWeekStats.totalShowedUp}
+          subtitle={`${currentWeekStats.showRate.toFixed(1)}% show rate`}
+          trend={calculateTrend(currentWeekStats.totalShowedUp, previousWeekStats.totalShowedUp)}
+          color="emerald"
+        />
+        <KPICard
+          title="Rescheduled"
+          value={currentWeekStats.totalRescheduled}
+          trend={calculateTrend(currentWeekStats.totalRescheduled, previousWeekStats.totalRescheduled)}
+          color="amber"
+        />
+        <KPICard
+          title="Full Territory"
+          value={currentWeekStats.totalFullTerritory}
+          trend={calculateTrend(currentWeekStats.totalFullTerritory, previousWeekStats.totalFullTerritory)}
+          color="slate"
         />
       </div>
 
