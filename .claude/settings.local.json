@@ -19,7 +19,8 @@
       "Read(//c/Users/uriel/Downloads/**)",
       "Read(//c/Users/uriel/**)",
       "Bash(curl:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

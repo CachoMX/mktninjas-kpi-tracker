@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { SetterKPISubmission } from '@/types/database'
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic'
@@ -14,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { KPICard } from '@/components/cards/kpi-card'
-import { useKPIData, useDashboardStats } from '@/hooks/use-kpi-data'
+import { useDashboardStats } from '@/hooks/use-kpi-data'
 
 // Mock goals - in a real app, these would come from settings
 const DAILY_GOALS = {
@@ -25,29 +27,88 @@ const DAILY_GOALS = {
   deals: 2,
 }
 
+// Helper function to safely format numbers
+const safeToFixed = (value: number | null | undefined, decimals: number = 1): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '0'
+  }
+  return value.toFixed(decimals)
+}
+
 export default function DailySummaryPage() {
-  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()))
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date('2025-09-12')))
+  
+  const [dailyData, setDailyData] = useState<SetterKPISubmission[]>([])
+  const [averageData, setAverageData] = useState<SetterKPISubmission[]>([])
+  const [loading, setLoading] = useState(true)
 
   const dayStart = startOfDay(selectedDate)
   const dayEnd = endOfDay(selectedDate)
-  
-  const { data: dailyData } = useKPIData({
-    setters: [],
-    dateRange: { from: dayStart, to: dayEnd },
-    metrics: [],
-  })
+
+  // Use useEffect to refetch data when selectedDate changes
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        // Use the same approach as the working test page - query all data then filter
+        const { data: allRecentData, error: dayError } = await supabase
+          .from('setter_kpi_submissions')
+          .select('*')
+          .order('submission_date', { ascending: false })
+          .limit(50)
+          
+        let dayData: SetterKPISubmission[] = []
+        
+        if (!dayError && allRecentData) {
+          // Filter for the selected date (same logic as test page)
+          const targetDate = format(selectedDate, 'yyyy-MM-dd')
+          
+          dayData = allRecentData.filter(item => {
+            const itemDate = item.submission_date.includes('T') 
+              ? item.submission_date.split('T')[0] 
+              : item.submission_date
+            return itemDate === targetDate
+          })
+        }
+
+        if (dayError) {
+          console.error('❌ Daily data error:', dayError)
+        } else {
+          setDailyData(dayData || [])
+        }
+
+        // Fetch team average data (last 30 days) - only on first load
+        if (averageData.length === 0) {
+          const thirtyDaysAgo = startOfDay(subDays(new Date(), 30))
+          const today = endOfDay(new Date())
+          const avgFromDate = format(thirtyDaysAgo, 'yyyy-MM-dd')
+          const avgToDate = format(today, 'yyyy-MM-dd')
+          
+          const { data: avgData, error: avgError } = await supabase
+            .from('setter_kpi_submissions')
+            .select('*')
+            .gte('submission_date', avgFromDate)
+            .lte('submission_date', avgToDate)
+            .order('submission_date', { ascending: false })
+
+          if (avgError) {
+            console.error('❌ Average data error:', avgError)
+          } else {
+            setAverageData(avgData || [])
+          }
+        }
+
+      } catch (err) {
+        console.error('❌ Daily page fetch error:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [selectedDate]) // Re-run when selectedDate changes
 
   const dailyStats = useDashboardStats(dailyData || [])
-
-  // Get team average for comparison (last 30 days)
-  const { data: averageData } = useKPIData({
-    setters: [],
-    dateRange: { 
-      from: startOfDay(subDays(new Date(), 30)), 
-      to: endOfDay(new Date()) 
-    },
-    metrics: [],
-  })
 
   const teamAverage = useMemo(() => {
     if (!averageData?.length) return { dials: 0, pickups: 0, appointments: 0, deals: 0 }
@@ -64,18 +125,71 @@ export default function DailySummaryPage() {
   const setterPerformance = useMemo(() => {
     if (!dailyData) return []
 
-    return dailyData.map(setter => ({
-      ...setter,
-      pickupRate: setter.dials_today > 0 ? (setter.pickups_today / setter.dials_today) * 100 : 0,
-      convoRate: setter.pickups_today > 0 ? (setter.one_min_convos / setter.pickups_today) * 100 : 0,
-      goalsAchieved: [
-        setter.dials_today >= DAILY_GOALS.dials ? 'dials' : null,
-        setter.pickups_today >= DAILY_GOALS.pickups ? 'pickups' : null,
-        setter.one_min_convos >= DAILY_GOALS.conversations ? 'conversations' : null,
-        setter.qualified_appointments >= DAILY_GOALS.appointments ? 'appointments' : null,
-        setter.deals_closed >= DAILY_GOALS.deals ? 'deals' : null,
-      ].filter(Boolean).length,
-    })).sort((a, b) => b.performance_score - a.performance_score)
+    // Group records by setter (contact_id) and combine them
+    const groupedBySetter = dailyData.reduce((acc, setter) => {
+      const key = setter.contact_id
+      
+      if (!acc[key]) {
+        acc[key] = {
+          ...setter,
+          dials_today: 0,
+          pickups_today: 0,
+          one_min_convos: 0,
+          qualified_appointments: 0,
+          deals_closed: 0,
+          dqs_today: 0,
+          follow_ups_today: 0,
+          discovery_calls_scheduled: 0,
+          prospects_showed_up: 0,
+          prospects_rescheduled: 0,
+          prospects_full_rterritory: 0,
+          performance_score: 0,
+          recordCount: 0
+        }
+      }
+      
+      // Sum all numeric fields
+      acc[key].dials_today += setter.dials_today || 0
+      acc[key].pickups_today += setter.pickups_today || 0
+      acc[key].one_min_convos += setter.one_min_convos || 0
+      acc[key].qualified_appointments += setter.qualified_appointments || 0
+      acc[key].deals_closed += setter.deals_closed || 0
+      acc[key].dqs_today += setter.dqs_today || 0
+      acc[key].follow_ups_today += setter.follow_ups_today || 0
+      acc[key].discovery_calls_scheduled += setter.discovery_calls_scheduled || 0
+      acc[key].prospects_showed_up += setter.prospects_showed_up || 0
+      acc[key].prospects_rescheduled += setter.prospects_rescheduled || 0
+      acc[key].prospects_full_rterritory += setter.prospects_full_rterritory || 0
+      acc[key].performance_score += setter.performance_score || 0
+      acc[key].recordCount += 1
+      
+      return acc
+    }, {} as Record<string, any>)
+
+    // Convert back to array and calculate rates
+    return Object.values(groupedBySetter).map(setter => {
+      const dials = setter.dials_today || 0
+      const pickups = setter.pickups_today || 0
+      const convos = setter.one_min_convos || 0
+      const appointments = setter.qualified_appointments || 0
+      const deals = setter.deals_closed || 0
+      // Average the performance score
+      const avgPerformanceScore = setter.recordCount > 0 ? setter.performance_score / setter.recordCount : 0
+      
+      return {
+        ...setter,
+        performance_score: avgPerformanceScore,
+        pickupRate: dials > 0 ? (pickups / dials) * 100 : 0,
+        convoRate: pickups > 0 ? (convos / pickups) * 100 : 0,
+        goalsAchieved: [
+          dials >= DAILY_GOALS.dials ? 'dials' : null,
+          pickups >= DAILY_GOALS.pickups ? 'pickups' : null,
+          convos >= DAILY_GOALS.conversations ? 'conversations' : null,
+          appointments >= DAILY_GOALS.appointments ? 'appointments' : null,
+          deals >= DAILY_GOALS.deals ? 'deals' : null,
+        ].filter(Boolean).length,
+      }
+    }).sort((a, b) => (b.performance_score || 0) - (a.performance_score || 0))
   }, [dailyData])
 
   const goalProgress = useMemo(() => {
@@ -103,6 +217,17 @@ export default function DailySummaryPage() {
       percentage: Math.abs(diff),
       direction: diff > 10 ? 'above' as const : diff < -10 ? 'below' as const : 'average' as const,
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading daily data...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -165,38 +290,74 @@ export default function DailySummaryPage() {
       </div>
 
       {/* Daily KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
-          title="Dials"
+          title="Total Dials"
           value={dailyStats.totalDials}
           subtitle={`Goal: ${DAILY_GOALS.dials}`}
           color="blue"
           icon={Target}
         />
         <KPICard
-          title="Pickups"
+          title="Total Pickups"
           value={dailyStats.totalPickups}
-          subtitle={`${dailyStats.pickupRate.toFixed(1)}% rate`}
+          subtitle={`${dailyStats.pickupRate.toFixed(1)}% pickup rate`}
           color="green"
           icon={Users}
         />
         <KPICard
-          title="Conversations"
+          title="1min+ Conversations"
           value={dailyStats.totalConvos}
-          subtitle={`${dailyStats.convoRate.toFixed(1)}% rate`}
-          color="yellow"
+          subtitle={`${dailyStats.convoRate.toFixed(1)}% conversion rate`}
+          color="purple"
         />
         <KPICard
-          title="Appointments"
+          title="Total DQs"
+          value={dailyStats.totalDQs}
+          color="red"
+        />
+        <KPICard
+          title="Qualified Appointments"
           value={dailyStats.totalAppointments}
-          color="purple"
+          color="cyan"
           icon={Calendar}
         />
         <KPICard
-          title="Deals"
+          title="Deals Closed"
           value={dailyStats.totalDeals}
-          color="cyan"
+          color="green"
           icon={TrendingUp}
+        />
+        <KPICard
+          title="Avg Performance Score"
+          value={dailyStats.averagePerformanceScore.toFixed(1)}
+          color="yellow"
+        />
+        <KPICard
+          title="Follow Ups"
+          value={dailyStats.totalFollowUps}
+          color="blue"
+        />
+        <KPICard
+          title="Discovery Calls"
+          value={dailyStats.totalDiscoveryCalls}
+          color="red"
+        />
+        <KPICard
+          title="Showed Up"
+          value={dailyStats.totalShowedUp}
+          subtitle={`${dailyStats.showRate.toFixed(1)}% show rate`}
+          color="purple"
+        />
+        <KPICard
+          title="Rescheduled"
+          value={dailyStats.totalRescheduled}
+          color="cyan"
+        />
+        <KPICard
+          title="Full Territory"
+          value={dailyStats.totalFullTerritory}
+          color="blue"
         />
       </div>
 
@@ -304,7 +465,7 @@ export default function DailySummaryPage() {
                       <div>
                         <div className="font-medium">{setter.full_name}</div>
                         <div className="text-sm text-muted-foreground">
-                          Performance Score: {setter.performance_score.toFixed(1)}
+                          Performance Score: {safeToFixed(setter.performance_score, 1)}
                         </div>
                       </div>
                     </div>
@@ -338,7 +499,7 @@ export default function DailySummaryPage() {
                         {setter.pickups_today}
                       </span>
                       <span className="ml-1 text-xs text-muted-foreground">
-                        ({setter.pickupRate.toFixed(1)}%)
+                        ({safeToFixed(setter.pickupRate, 1)}%)
                       </span>
                     </div>
                     <div>

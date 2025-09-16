@@ -319,7 +319,7 @@ export default function DashboardPage() {
     console.log('📈 Sample activity data:', result.slice(0, 3))
     
     return result
-  }, [kpiData, filters.metrics])
+  }, [kpiData, filters.metrics, filters.dateRange.from, filters.dateRange.to])
 
   const updateFilters = (updates: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...updates }))

@@ -180,7 +180,7 @@ export default function WeeklySummaryPage() {
           value={currentWeekStats.totalConvos}
           subtitle={`${currentWeekStats.convoRate.toFixed(1)}% conversion rate`}
           trend={calculateTrend(currentWeekStats.totalConvos, previousWeekStats.totalConvos)}
-          color="orange"
+          color="yellow"
         />
         <KPICard
           title="Total DQs"
@@ -210,32 +210,32 @@ export default function WeeklySummaryPage() {
           title="Follow Ups"
           value={currentWeekStats.totalFollowUps}
           trend={calculateTrend(currentWeekStats.totalFollowUps, previousWeekStats.totalFollowUps)}
-          color="pink"
+          color="purple"
         />
         <KPICard
           title="Discovery Calls"
           value={currentWeekStats.totalDiscoveryCalls}
           trend={calculateTrend(currentWeekStats.totalDiscoveryCalls, previousWeekStats.totalDiscoveryCalls)}
-          color="indigo"
+          color="blue"
         />
         <KPICard
           title="Showed Up"
           value={currentWeekStats.totalShowedUp}
           subtitle={`${currentWeekStats.showRate.toFixed(1)}% show rate`}
           trend={calculateTrend(currentWeekStats.totalShowedUp, previousWeekStats.totalShowedUp)}
-          color="emerald"
+          color="green"
         />
         <KPICard
           title="Rescheduled"
           value={currentWeekStats.totalRescheduled}
           trend={calculateTrend(currentWeekStats.totalRescheduled, previousWeekStats.totalRescheduled)}
-          color="amber"
+          color="red"
         />
         <KPICard
           title="Full Territory"
           value={currentWeekStats.totalFullTerritory}
           trend={calculateTrend(currentWeekStats.totalFullTerritory, previousWeekStats.totalFullTerritory)}
-          color="slate"
+          color="cyan"
         />
       </div>
 

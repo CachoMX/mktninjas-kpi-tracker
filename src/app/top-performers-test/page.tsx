@@ -61,7 +61,7 @@ export default function TopPerformersTestPage() {
           console.log('📅 Date range for filtering:', fromDate, 'to', toDate)
           
           // Filter data by date range
-          const filteredData = allData.filter(item => {
+          const filteredData = allData.filter((item: SetterKPISubmission) => {
             const itemDate = item.submission_date.includes('T') ? item.submission_date.split('T')[0] : item.submission_date
             return itemDate >= fromDate && itemDate <= toDate
           })
@@ -69,7 +69,7 @@ export default function TopPerformersTestPage() {
           console.log('📊 Filtered data:', filteredData.length, 'records')
           
           // Group by setter name
-          const grouped = filteredData.reduce((acc, curr) => {
+          const grouped = filteredData.reduce((acc, curr: SetterKPISubmission) => {
             const name = curr.full_name
             if (!acc[name]) {
               acc[name] = {
@@ -86,6 +86,8 @@ export default function TopPerformersTestPage() {
                 fullTerritory: 0,
                 deals: 0,
                 performanceScore: 0,
+                pickupRate: 0,
+                showRate: 0,
               }
             }
             acc[name].dials += curr.dials_today
@@ -155,7 +157,7 @@ export default function TopPerformersTestPage() {
             <CustomBarChart
               title="Top Performers"
               description="Sorted by total dials - last 30 days"
-              data={topPerformersData}
+              data={topPerformersData as unknown as Record<string, string | number>[]}
               bars={[
                 { dataKey: 'dials', fill: '#2563eb', name: 'Dials' },
               ]}
@@ -247,7 +249,7 @@ export default function TopPerformersTestPage() {
             <p><strong>Chart Props Being Passed:</strong></p>
             <div className="mt-2 space-y-1 text-sm">
               <p><strong>Data length:</strong> {topPerformersData.length}</p>
-              <p><strong>xAxisKey:</strong> "name"</p>
+              <p><strong>xAxisKey:</strong> &quot;name&quot;</p>
               <p><strong>Bars configured:</strong> dials, pickups, convos, dqs, appointments, deals</p>
               <p><strong>Sample data keys:</strong> {topPerformersData[0] ? Object.keys(topPerformersData[0]).join(', ') : 'No data'}</p>
             </div>

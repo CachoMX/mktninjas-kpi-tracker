@@ -18,6 +18,14 @@ import { useKPIData, useDashboardStats, useSetters } from '@/hooks/use-kpi-data'
 
 type TimePeriod = 'month' | 'quarter' | 'year'
 
+// Helper function to safely format numbers
+const safeToFixed = (value: number | null | undefined, decimals: number = 1): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '0'
+  }
+  return value.toFixed(decimals)
+}
+
 export default function RepReportPage() {
   const [selectedSetter, setSelectedSetter] = useState<string>('')
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('month')
@@ -165,13 +173,13 @@ export default function RepReportPage() {
         row.date,
         row.dials_today,
         row.pickups_today,
-        row.pickupRate.toFixed(2),
+        safeToFixed(row.pickupRate, 2),
         row.one_min_convos,
-        row.convoRate.toFixed(2),
+        safeToFixed(row.convoRate, 2),
         row.dqs_today,
         row.qualified_appointments,
         row.deals_closed,
-        row.performance_score.toFixed(2),
+        safeToFixed(row.performance_score, 2),
         row.hours_of_sleep,
       ].join(','))
     ].join('\n')
@@ -278,7 +286,7 @@ export default function RepReportPage() {
         />
         <KPICard
           title="Consistency Score"
-          value={`${consistencyScore.toFixed(0)}%`}
+          value={`${safeToFixed(consistencyScore, 0)}%`}
           color="cyan"
           icon={Award}
         />
@@ -334,7 +342,7 @@ export default function RepReportPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Performance Score:</span>
-                    <span className="font-mono font-semibold">{bestPeriods.score.toFixed(1)}</span>
+                    <span className="font-mono font-semibold">{safeToFixed(bestPeriods.score, 1)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Dials Made:</span>
@@ -370,25 +378,25 @@ export default function RepReportPage() {
             <div className="flex justify-between">
               <span>Pickup Rate:</span>
               <span className="font-mono font-semibold">
-                {currentPeriodStats.pickupRate.toFixed(1)}%
+                {safeToFixed(currentPeriodStats.pickupRate, 1)}%
               </span>
             </div>
             <div className="flex justify-between">
               <span>Conversation Rate:</span>
               <span className="font-mono font-semibold">
-                {currentPeriodStats.convoRate.toFixed(1)}%
+                {safeToFixed(currentPeriodStats.convoRate, 1)}%
               </span>
             </div>
             <div className="flex justify-between">
               <span>Show Rate:</span>
               <span className="font-mono font-semibold">
-                {currentPeriodStats.showRate.toFixed(1)}%
+                {safeToFixed(currentPeriodStats.showRate, 1)}%
               </span>
             </div>
             <div className="flex justify-between">
               <span>Avg Performance Score:</span>
               <span className="font-mono font-semibold">
-                {currentPeriodStats.averagePerformanceScore.toFixed(1)}
+                {safeToFixed(currentPeriodStats.averagePerformanceScore, 1)}
               </span>
             </div>
           </CardContent>
@@ -428,13 +436,13 @@ export default function RepReportPage() {
                     <TableCell className="text-right font-mono">{row.pickups_today}</TableCell>
                     <TableCell className="text-right">
                       <Badge variant="outline" className="font-mono">
-                        {row.pickupRate.toFixed(1)}%
+                        {safeToFixed(row.pickupRate, 1)}%
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-mono">{row.one_min_convos}</TableCell>
                     <TableCell className="text-right">
                       <Badge variant="outline" className="font-mono">
-                        {row.convoRate.toFixed(1)}%
+                        {safeToFixed(row.convoRate, 1)}%
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-mono">{row.dqs_today}</TableCell>
@@ -449,7 +457,7 @@ export default function RepReportPage() {
                         }
                         className="font-mono"
                       >
-                        {row.performance_score.toFixed(1)}
+                        {safeToFixed(row.performance_score, 1)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-mono">{row.hours_of_sleep}h</TableCell>
