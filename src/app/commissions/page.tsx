@@ -166,10 +166,10 @@ export default function CommissionsPage() {
 
         if (!error && data) {
           const parentWithCommission = {
-            ...data,
-            commission_calculation: Array.isArray(data.commission_calculations)
-              ? data.commission_calculations[0]
-              : data.commission_calculations
+            ...(data as any),
+            commission_calculation: Array.isArray((data as any).commission_calculations)
+              ? (data as any).commission_calculations[0]
+              : (data as any).commission_calculations
           } as PaymentWithCommission
           setParentPayment(parentWithCommission)
         }

@@ -78,9 +78,6 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
 
   const watchedDate = watch('payment_date')
   const watchedDealTypeId = watch('deal_type_id')
-  const watchedSetterAssigned = watch('setter_assigned')
-  const watchedCloserAssigned = watch('closer_assigned')
-  const watchedAssignedCSM = watch('assigned_csm')
   const watchedPaymentType = watch('payment_type')
   const watchedEmail = watch('email')
   const watchedParentPaymentId = watch('parent_payment_id')
@@ -91,11 +88,11 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
                           selectedDealType?.display_name?.toLowerCase().includes('service upgrade')
 
   // Check if CSM is assigned (not N/A)
-  const hasCSMAssigned = watchedAssignedCSM && watchedAssignedCSM !== 'N/A'
+  // const hasCSMAssigned = watchedAssignedCSM && watchedAssignedCSM !== 'N/A'
 
   // Check if Setter or Closer is assigned
-  const hasSetterOrCloserAssigned = (watchedSetterAssigned && watchedSetterAssigned !== 'unassigned') ||
-                                    (watchedCloserAssigned && watchedCloserAssigned !== 'unassigned')
+  // const hasSetterOrCloserAssigned = (watchedSetterAssigned && watchedSetterAssigned !== 'unassigned') ||
+  //                                   (watchedCloserAssigned && watchedCloserAssigned !== 'unassigned')
 
   // Filter available parent payments for rebills
   const availableParentPayments = allPayments?.filter((p: any) => {
@@ -495,8 +492,8 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
                       <div className="flex-1">
                         <p className="font-semibold text-sm mb-1">Deal Type Mismatch Detected</p>
                         <p className="text-sm mb-3">
-                          The rebill's deal type (<strong>{selectedDealType?.display_name}</strong>)
-                          doesn't match the parent deal's type (<strong>{dealTypes?.find(dt => dt.id === parentDealTypeId)?.display_name}</strong>).
+                          The rebill&apos;s deal type (<strong>{selectedDealType?.display_name}</strong>)
+                          doesn&apos;t match the parent deal&apos;s type (<strong>{dealTypes?.find(dt => dt.id === parentDealTypeId)?.display_name}</strong>).
                           This could cause incorrect commission calculations.
                         </p>
                         <button

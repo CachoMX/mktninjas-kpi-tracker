@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { Payment, DealType, CommissionCalculation } from '@/types/database'
-import { COMMISSION_TIERS, calculateSixMonthEquivalent, getCommissionTier, calculateRebillPercentage } from '@/hooks/use-commission-data'
+import { COMMISSION_TIERS, calculateSixMonthEquivalent, getCommissionTier } from '@/hooks/use-commission-data'
 
 export class CommissionCalculator {
 
@@ -131,7 +131,7 @@ export class CommissionCalculator {
         month,
         payment.payment_date,
         teamMemberName,
-        teamMemberType
+        teamMemberType as 'setter' | 'closer' | 'csm' | null
       )
 
       // Get commission tier based on this person's deals in month
@@ -163,8 +163,8 @@ export class CommissionCalculator {
 
             if (parentCommission) {
               // Use parent's rates instead of current tier rates
-              usedCloserRate = parentCommission.closer_rate
-              usedSetterRate = parentCommission.setter_rate
+              usedCloserRate = (parentCommission as any).closer_rate
+              usedSetterRate = (parentCommission as any).setter_rate
 
               if (hasCloserAssigned) {
                 closerCommission = amount * (usedCloserRate / 100)

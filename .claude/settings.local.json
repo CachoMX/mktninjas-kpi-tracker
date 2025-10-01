@@ -29,7 +29,9 @@
       "Bash(do echo \"Testing /$page:\")",
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git config:*)",
+      "Bash(gh auth:*)"
     ],
     "deny": [],
     "ask": []
