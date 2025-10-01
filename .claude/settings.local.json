@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(dir)",
+      "Bash(del README.md)",
+      "Bash(rm:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install @supabase/supabase-js @tanstack/react-query @hookform/resolvers react-hook-form zod lucide-react date-fns recharts framer-motion react-day-picker cmdk sonner @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-select @radix-ui/react-switch @radix-ui/react-tabs @radix-ui/react-toast @radix-ui/react-tooltip @radix-ui/react-popover @radix-ui/react-calendar @radix-ui/react-checkbox @radix-ui/react-label @radix-ui/react-separator @radix-ui/react-slot)",
+      "Bash(npm install:*)",
+      "Bash(npx:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(kill:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Read(//c/Users/uriel/Downloads/**)",
+      "Read(//c/Users/uriel/**)",
+      "Bash(curl:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(taskkill:*)",
+      "Bash(for file in src/app/daily-test/page.tsx src/app/debug/page.tsx src/app/heatmap-test/page.tsx src/app/settings/page.tsx src/components/tables/leaderboard-table.tsx)",
+      "Bash(do sed -i 's/deals_closed/0 \\/\\*deals_closed removed\\*\\//g' \"$file\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(for page in \"\" \"daily\" \"weekly\")",
+      "Bash(do echo \"Testing /$page:\")",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git remote add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
