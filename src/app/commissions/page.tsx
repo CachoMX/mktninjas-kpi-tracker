@@ -240,7 +240,7 @@ export default function CommissionsPage() {
     }
   }
 
-  // Check if payment has exactly one team member assigned (Setter OR Closer OR CSM)
+  // Check if payment has at least one team member assigned
   const hasValidAssignment = (payment: PaymentWithCommission) => {
     const hasSetterAssigned = payment.setter_assigned && payment.setter_assigned !== 'Unassigned'
     const hasCloserAssigned = payment.closer_assigned && payment.closer_assigned !== 'Unassigned'
@@ -249,8 +249,8 @@ export default function CommissionsPage() {
     // Count how many are assigned
     const assignedCount = [hasSetterAssigned, hasCloserAssigned, hasCSMAssigned].filter(Boolean).length
 
-    // Must have exactly one assignment
-    return assignedCount === 1
+    // Must have at least one assignment
+    return assignedCount >= 1
   }
 
   const getStatusBadge = (status: ServiceAgreementStatus) => {

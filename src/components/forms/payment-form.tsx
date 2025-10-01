@@ -191,7 +191,7 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       // Clear any previous validation errors
       setValidationError(null)
 
-      // Validation: Only ONE team member can be assigned
+      // Validation: At least one team member must be assigned
       const hasSetterAssignedValue = data.setter_assigned && data.setter_assigned !== 'unassigned'
       const hasCloserAssignedValue = data.closer_assigned && data.closer_assigned !== 'unassigned'
       const hasCSMAssignedValue = data.assigned_csm && data.assigned_csm !== 'N/A'
@@ -199,24 +199,21 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       const assignedCount = [hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue].filter(Boolean).length
 
       if (assignedCount === 0) {
-        setValidationError('Please assign exactly ONE team member (Setter OR Closer OR CSM)')
+        setValidationError('Please assign at least one team member (Setter, Closer, or CSM)')
         return
       }
 
-      if (assignedCount > 1) {
-        setValidationError('Please assign only ONE team member per payment. You cannot assign multiple team members (Setter, Closer, or CSM) to the same payment.')
-        return
+      // Validation: If CSM is assigned with Setter/Closer, must be Service Upgrade
+      if (hasCSMAssignedValue && (hasSetterAssignedValue || hasCloserAssignedValue)) {
+        if (!isServiceUpgrade) {
+          setValidationError('CSM can only be assigned with Setter/Closer for Service Upgrade deals')
+          return
+        }
       }
 
       // Validation: Service Upgrade requires CSM
       if (isServiceUpgrade && !hasCSMAssignedValue) {
         setValidationError('Service Upgrade deals require a CSM assignment')
-        return
-      }
-
-      // Warning: Service Upgrade with Pending status
-      if (isServiceUpgrade && data.service_agreement_status === 'pending') {
-        setValidationError('⚠️ Service Upgrade deals with "Pending" status will not generate commission until marked as "Completed"')
         return
       }
 
@@ -531,9 +528,6 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
               {errors.deal_type_id && (
                 <p className="text-sm text-red-500">{errors.deal_type_id.message}</p>
               )}
-              {isServiceUpgrade && (
-                <p className="text-xs text-cyan-500">✓ Service Upgrade selected - CSM assignment required</p>
-              )}
             </div>
 
             {/* Service Agreement Status */}
@@ -638,7 +632,6 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
                     {errors.assigned_csm && (
                       <p className="text-sm text-red-500">{errors.assigned_csm.message}</p>
                     )}
-                    <p className="text-xs text-cyan-500">✓ Service Upgrade requires CSM assignment</p>
                   </div>
                 )}
               </div>

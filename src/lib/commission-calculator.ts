@@ -102,35 +102,37 @@ export class CommissionCalculator {
       const paymentDate = new Date(payment.payment_date)
       const month = `${paymentDate.getFullYear()}-${String(paymentDate.getMonth() + 1).padStart(2, '0')}`
 
-      // Determine which team member to calculate for
+      // Determine which team members are assigned
       const hasSetterAssigned = payment.setter_assigned && payment.setter_assigned !== 'Unassigned'
       const hasCloserAssigned = payment.closer_assigned && payment.closer_assigned !== 'Unassigned'
       const hasCSMAssigned = payment.assigned_csm && payment.assigned_csm !== 'N/A'
 
-      let teamMemberName = null
-      let teamMemberType = null
-
-      if (hasSetterAssigned) {
-        teamMemberName = payment.setter_assigned
-        teamMemberType = 'setter'
-      } else if (hasCloserAssigned) {
-        teamMemberName = payment.closer_assigned
-        teamMemberType = 'closer'
-      } else if (hasCSMAssigned) {
-        teamMemberName = payment.assigned_csm
-        teamMemberType = 'csm'
+      // Calculate tier for closer (if assigned)
+      let closerTier = null
+      if (hasCloserAssigned) {
+        const closerDeals = await this.calculateSixMonthDealsForPerson(
+          month,
+          payment.payment_date,
+          payment.closer_assigned,
+          'closer'
+        )
+        closerTier = getCommissionTier(closerDeals)
       }
 
-      // Calculate six-month equivalent deals for THIS PERSON in the month up to this payment
-      const sixMonthDealsInMonth = await this.calculateSixMonthDealsForPerson(
-        month,
-        payment.payment_date,
-        teamMemberName,
-        teamMemberType as 'setter' | 'closer' | 'csm' | null
-      )
+      // Calculate tier for setter (if assigned)
+      let setterTier = null
+      if (hasSetterAssigned) {
+        const setterDeals = await this.calculateSixMonthDealsForPerson(
+          month,
+          payment.payment_date,
+          payment.setter_assigned,
+          'setter'
+        )
+        setterTier = getCommissionTier(setterDeals)
+      }
 
-      // Get commission tier based on this person's deals in month
-      const tier = getCommissionTier(sixMonthDealsInMonth)
+      // Use closer tier as default for backwards compatibility
+      const tier = closerTier || setterTier || getCommissionTier(0)
 
       const amount = Number(payment.amount)
       let closerCommission = 0
@@ -145,7 +147,7 @@ export class CommissionCalculator {
           csmCommission = amount * 0.03 // 3% for CSM
         }
       } else {
-        // Regular deals - only one team member gets commission when completed
+        // Regular deals - closer AND/OR setter can get commission when completed
         if (payment.service_agreement_status === 'completed') {
           // Special handling for Rebills - use parent deal's commission rate
           if (payment.payment_type === 'Rebill' && (payment as any).parent_payment_id) {
@@ -161,32 +163,43 @@ export class CommissionCalculator {
               usedCloserRate = (parentCommission as any).closer_rate
               usedSetterRate = (parentCommission as any).setter_rate
 
+              // Both closer and setter can receive commission
               if (hasCloserAssigned) {
                 closerCommission = amount * (usedCloserRate / 100)
-              } else if (hasSetterAssigned) {
+              }
+              if (hasSetterAssigned) {
                 setterCommission = amount * (usedSetterRate / 100)
-              } else if (hasCSMAssigned) {
-                // Rebills with CSM use setter rate as fallback
+              }
+              if (hasCSMAssigned && !hasCloserAssigned && !hasSetterAssigned) {
+                // CSM only if no closer/setter assigned
                 csmCommission = amount * (usedSetterRate / 100)
               }
             } else {
               console.warn('Parent commission not found for rebill, using current tier rates')
               // Fallback to current tier rates if parent commission not found
-              if (hasCloserAssigned) {
-                closerCommission = amount * (tier.closer_rate / 100)
-              } else if (hasSetterAssigned) {
-                setterCommission = amount * (tier.setter_rate / 100)
-              } else if (hasCSMAssigned) {
+              if (hasCloserAssigned && closerTier) {
+                closerCommission = amount * (closerTier.closer_rate / 100)
+                usedCloserRate = closerTier.closer_rate
+              }
+              if (hasSetterAssigned && setterTier) {
+                setterCommission = amount * (setterTier.setter_rate / 100)
+                usedSetterRate = setterTier.setter_rate
+              }
+              if (hasCSMAssigned && !hasCloserAssigned && !hasSetterAssigned) {
                 csmCommission = amount * 0.03
               }
             }
           } else {
-            // Standard New Deal commission rates
-            if (hasCloserAssigned) {
-              closerCommission = amount * (tier.closer_rate / 100)
-            } else if (hasSetterAssigned) {
-              setterCommission = amount * (tier.setter_rate / 100)
-            } else if (hasCSMAssigned) {
+            // Standard New Deal commission rates - both can receive
+            if (hasCloserAssigned && closerTier) {
+              closerCommission = amount * (closerTier.closer_rate / 100)
+              usedCloserRate = closerTier.closer_rate
+            }
+            if (hasSetterAssigned && setterTier) {
+              setterCommission = amount * (setterTier.setter_rate / 100)
+              usedSetterRate = setterTier.setter_rate
+            }
+            if (hasCSMAssigned && !hasCloserAssigned && !hasSetterAssigned) {
               // Special case: if only CSM assigned for regular deal
               csmCommission = amount * 0.03 // 3% for CSM
             }
@@ -198,9 +211,29 @@ export class CommissionCalculator {
       const dealTypeName = dealType?.name || 'referral_network_6_months'
       const sixMonthEquivalent = calculateSixMonthEquivalent(dealTypeName)
 
+      // For deal_count_at_time, use the closer's or setter's deal count (whichever has commission)
+      let dealCountAtTime = 0
+      if (hasCloserAssigned && closerTier) {
+        const closerDeals = await this.calculateSixMonthDealsForPerson(
+          month,
+          payment.payment_date,
+          payment.closer_assigned,
+          'closer'
+        )
+        dealCountAtTime = closerDeals
+      } else if (hasSetterAssigned && setterTier) {
+        const setterDeals = await this.calculateSixMonthDealsForPerson(
+          month,
+          payment.payment_date,
+          payment.setter_assigned,
+          'setter'
+        )
+        dealCountAtTime = setterDeals
+      }
+
       return {
         month,
-        deal_count_at_time: Number(sixMonthDealsInMonth.toFixed(2)), // Convert to number with 2 decimals
+        deal_count_at_time: Number(dealCountAtTime.toFixed(2)), // Convert to number with 2 decimals
         six_month_equivalent: Number(sixMonthEquivalent.toFixed(2)), // Convert to number with 2 decimals
         tier_min_deals: tier.min_deals,
         tier_max_deals: tier.max_deals,
