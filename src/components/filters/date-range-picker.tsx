@@ -49,6 +49,14 @@ const presets: { label: string; value: DatePreset; getValue: () => { from: Date;
     }),
   },
   {
+    label: 'Last 60 Days',
+    value: 'last-60-days',
+    getValue: () => ({
+      from: startOfDay(subDays(new Date(), 60)),
+      to: endOfDay(new Date()),
+    }),
+  },
+  {
     label: 'Custom Range',
     value: 'custom',
     getValue: () => ({
