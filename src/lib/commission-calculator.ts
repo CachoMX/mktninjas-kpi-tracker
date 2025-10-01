@@ -56,8 +56,6 @@ export class CommissionCalculator {
 
       if (existingCalc) {
         // Update existing calculation
-        console.log('Updating commission calculation:', commissionData)
-
         const { data, error } = await (supabase as any)
           .from('commission_calculations')
           .update(commissionData)
@@ -68,14 +66,12 @@ export class CommissionCalculator {
         if (error) {
           console.error('Error updating commission calculation:', error)
           console.error('Error details:', JSON.stringify(error, null, 2))
-          console.error('Attempted to update with:', commissionData)
           return null
         }
         result = data
       } else {
         // Create new calculation
         const insertData = { ...commissionData, payment_id: paymentId }
-        console.log('Inserting commission calculation:', insertData)
 
         const { data, error } = await (supabase as any)
           .from('commission_calculations')
@@ -86,7 +82,6 @@ export class CommissionCalculator {
         if (error) {
           console.error('Error creating commission calculation:', error)
           console.error('Error details:', JSON.stringify(error, null, 2))
-          console.error('Attempted to insert:', insertData)
           return null
         }
         result = data

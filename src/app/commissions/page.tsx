@@ -79,8 +79,6 @@ export default function CommissionsPage() {
       const fromDate = format(dateRange.from, 'yyyy-MM-dd')
       const toDate = format(dateRange.to, 'yyyy-MM-dd')
 
-      console.log('🔄 Fetching payments...', { fromDate, toDate })
-
       const { data: paymentsData, error } = await supabase
         .from('payments')
         .select(`
