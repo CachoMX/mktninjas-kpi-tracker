@@ -175,7 +175,7 @@ export interface LeaderboardEntry {
   [key: string]: string | number | undefined
 }
 
-export type DatePreset = 'today' | 'this-week' | 'this-month' | 'last-30-days' | 'custom'
+export type DatePreset = 'today' | 'this-week' | 'this-month' | 'last-30-days' | 'last-60-days' | 'custom'
 
 // Commission System Types
 
