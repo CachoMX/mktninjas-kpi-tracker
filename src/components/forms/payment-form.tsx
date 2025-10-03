@@ -188,6 +188,8 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
 
   const onSubmit = async (data: PaymentFormData) => {
     try {
+      console.log('🚀 Form submitted with data:', data)
+
       // Clear any previous validation errors
       setValidationError(null)
 
@@ -196,9 +198,12 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       const hasCloserAssignedValue = data.closer_assigned && data.closer_assigned !== 'Unassigned'
       const hasCSMAssignedValue = data.assigned_csm && data.assigned_csm !== 'N/A'
 
+      console.log('👥 Team validation:', { hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue })
+
       const assignedCount = [hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue].filter(Boolean).length
 
       if (assignedCount === 0) {
+        console.log('❌ Validation failed: No team member assigned')
         setValidationError('Please assign at least one team member (Setter, Closer, or CSM)')
         return
       }
@@ -260,10 +265,14 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
           email: payment.email
         }
 
+        console.log('📝 Updating payment with data:', updateData)
+
         await updatePayment.mutateAsync({
           id: payment.id,
           updates: updateData
         })
+
+        console.log('✅ Payment updated successfully')
         paymentId = payment.id
       } else {
         // Generate unique IDs if not provided
