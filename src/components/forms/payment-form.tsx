@@ -192,8 +192,8 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       setValidationError(null)
 
       // Validation: At least one team member must be assigned
-      const hasSetterAssignedValue = data.setter_assigned && data.setter_assigned !== 'unassigned'
-      const hasCloserAssignedValue = data.closer_assigned && data.closer_assigned !== 'unassigned'
+      const hasSetterAssignedValue = data.setter_assigned && data.setter_assigned !== 'Unassigned'
+      const hasCloserAssignedValue = data.closer_assigned && data.closer_assigned !== 'Unassigned'
       const hasCSMAssignedValue = data.assigned_csm && data.assigned_csm !== 'N/A'
 
       const assignedCount = [hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue].filter(Boolean).length
