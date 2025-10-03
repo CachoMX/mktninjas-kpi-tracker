@@ -62,6 +62,8 @@ export default function CommissionsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | ServiceAgreementStatus>('all')
   const [dealTypeFilter, setDealTypeFilter] = useState<string>('all')
+  const [positionFilter, setPositionFilter] = useState<'all' | 'closer' | 'setter' | 'csm'>('all')
+  const [employeeFilter, setEmployeeFilter] = useState<string>('all')
   const [dateRange, setDateRange] = useState({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date())
@@ -179,6 +181,36 @@ export default function CommissionsPage() {
     fetchParentPayment()
   }, [viewingPayment])
 
+  // Get unique employees by position
+  const employeesByPosition = useMemo(() => {
+    const closers = new Set<string>()
+    const setters = new Set<string>()
+    const csms = new Set<string>()
+
+    payments.forEach(payment => {
+      if (payment.closer_assigned && payment.closer_assigned !== 'Unassigned') {
+        closers.add(payment.closer_assigned)
+      }
+      if (payment.setter_assigned && payment.setter_assigned !== 'Unassigned') {
+        setters.add(payment.setter_assigned)
+      }
+      if (payment.assigned_csm && payment.assigned_csm !== 'N/A') {
+        csms.add(payment.assigned_csm)
+      }
+    })
+
+    return {
+      closer: Array.from(closers).sort(),
+      setter: Array.from(setters).sort(),
+      csm: Array.from(csms).sort()
+    }
+  }, [payments])
+
+  // Reset employee filter when position changes
+  useEffect(() => {
+    setEmployeeFilter('all')
+  }, [positionFilter])
+
   // Filter payments based on search and filters
   const filteredPayments = useMemo(() => {
     return payments.filter(payment => {
@@ -187,15 +219,38 @@ export default function CommissionsPage() {
       const matchesSearch =
         payment.billing_full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.whop_account_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         dealTypeName.toLowerCase().includes(searchTerm.toLowerCase())
 
       const matchesStatus = statusFilter === 'all' || payment.service_agreement_status === statusFilter
       const matchesDealType = dealTypeFilter === 'all' || dealTypeName === dealTypeFilter
 
-      return matchesSearch && matchesStatus && matchesDealType
+      // Position and employee filter logic
+      let matchesPositionAndEmployee = true
+      if (positionFilter !== 'all') {
+        if (employeeFilter !== 'all') {
+          // Filter by specific employee in position
+          if (positionFilter === 'closer') {
+            matchesPositionAndEmployee = payment.closer_assigned === employeeFilter
+          } else if (positionFilter === 'setter') {
+            matchesPositionAndEmployee = payment.setter_assigned === employeeFilter
+          } else if (positionFilter === 'csm') {
+            matchesPositionAndEmployee = payment.assigned_csm === employeeFilter
+          }
+        } else {
+          // Filter by position only (show all payments where this position is assigned)
+          if (positionFilter === 'closer') {
+            matchesPositionAndEmployee = !!(payment.closer_assigned && payment.closer_assigned !== 'Unassigned')
+          } else if (positionFilter === 'setter') {
+            matchesPositionAndEmployee = !!(payment.setter_assigned && payment.setter_assigned !== 'Unassigned')
+          } else if (positionFilter === 'csm') {
+            matchesPositionAndEmployee = !!(payment.assigned_csm && payment.assigned_csm !== 'N/A')
+          }
+        }
+      }
+
+      return matchesSearch && matchesStatus && matchesDealType && matchesPositionAndEmployee
     })
-  }, [payments, searchTerm, statusFilter, dealTypeFilter])
+  }, [payments, searchTerm, statusFilter, dealTypeFilter, positionFilter, employeeFilter])
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -203,12 +258,23 @@ export default function CommissionsPage() {
     const totalAmount = filteredPayments.reduce((sum, payment) => sum + Number(payment.amount), 0)
     const completedPayments = filteredPayments.filter(p => p.service_agreement_status === 'completed')
     const completedAmount = completedPayments.reduce((sum, payment) => sum + Number(payment.amount), 0)
-    const totalCloserCommission = completedPayments.reduce((sum, payment) =>
-      sum + (payment.commission_calculation?.closer_commission || 0), 0)
-    const totalSetterCommission = completedPayments.reduce((sum, payment) =>
-      sum + (payment.commission_calculation?.setter_commission || 0), 0)
-    const totalCSMCommission = completedPayments.reduce((sum, payment) =>
-      sum + (payment.commission_calculation?.csm_commission || 0), 0)
+
+    // Calculate commission based on position filter
+    let totalCloserCommission = 0
+    let totalSetterCommission = 0
+    let totalCSMCommission = 0
+
+    completedPayments.forEach(payment => {
+      if (positionFilter === 'all' || positionFilter === 'closer') {
+        totalCloserCommission += payment.commission_calculation?.closer_commission || 0
+      }
+      if (positionFilter === 'all' || positionFilter === 'setter') {
+        totalSetterCommission += payment.commission_calculation?.setter_commission || 0
+      }
+      if (positionFilter === 'all' || positionFilter === 'csm') {
+        totalCSMCommission += payment.commission_calculation?.csm_commission || 0
+      }
+    })
 
     return {
       totalPayments,
@@ -220,7 +286,7 @@ export default function CommissionsPage() {
       totalCSMCommission,
       totalCommissions: totalCloserCommission + totalSetterCommission + totalCSMCommission
     }
-  }, [filteredPayments])
+  }, [filteredPayments, positionFilter])
 
   // Get unique deal types for filter
   const dealTypes = useMemo(() => {
@@ -358,48 +424,129 @@ export default function CommissionsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Search</label>
-              <Input
-                placeholder="Search by name, email, or deal type..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="space-y-4">
+            {/* First row: Search, Status, Deal Type, Date Range */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Search</label>
+                <Input
+                  placeholder="Search by name, email, or deal type..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Deal Type</label>
+                <Select value={dealTypeFilter} onValueChange={setDealTypeFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Deal Types</SelectItem>
+                    {dealTypes.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Date Range</label>
+                <DateRangePicker
+                  value={dateRange}
+                  onChange={(range) => setDateRange(range)}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Deal Type</label>
-              <Select value={dealTypeFilter} onValueChange={setDealTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Deal Types</SelectItem>
-                  {dealTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Date Range</label>
-              <DateRangePicker
-                value={dateRange}
-                onChange={(range) => setDateRange(range)}
-              />
+
+            {/* Second row: Position and Employee Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 mt-4 border-t">
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Position
+                </label>
+                <Select value={positionFilter} onValueChange={(value: any) => setPositionFilter(value)}>
+                  <SelectTrigger className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Positions</SelectItem>
+                    <SelectItem value="closer">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        Closer
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="setter">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-orange-500" />
+                        Setter
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="csm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-cyan-500" />
+                        CSM
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Employee
+                  {positionFilter !== 'all' && (
+                    <Badge variant="outline" className="text-xs">
+                      {positionFilter === 'closer' ? 'Closers' : positionFilter === 'setter' ? 'Setters' : 'CSMs'}
+                    </Badge>
+                  )}
+                </label>
+                <Select
+                  value={employeeFilter}
+                  onValueChange={setEmployeeFilter}
+                  disabled={positionFilter === 'all'}
+                >
+                  <SelectTrigger className={cn(
+                    "transition-all",
+                    positionFilter === 'all' && "opacity-50 cursor-not-allowed",
+                    positionFilter === 'closer' && "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800",
+                    positionFilter === 'setter' && "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800",
+                    positionFilter === 'csm' && "bg-cyan-50 dark:bg-cyan-950/20 border-cyan-200 dark:border-cyan-800"
+                  )}>
+                    <SelectValue placeholder={positionFilter === 'all' ? 'Select position first' : 'All employees'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Employees</SelectItem>
+                    {positionFilter !== 'all' && employeesByPosition[positionFilter].map(employee => (
+                      <SelectItem key={employee} value={employee}>
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            positionFilter === 'closer' && "bg-blue-500",
+                            positionFilter === 'setter' && "bg-orange-500",
+                            positionFilter === 'csm' && "bg-cyan-500"
+                          )} />
+                          {employee}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
