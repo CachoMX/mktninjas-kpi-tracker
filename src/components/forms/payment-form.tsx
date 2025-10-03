@@ -202,8 +202,6 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
 
   const onSubmit = async (data: PaymentFormData) => {
     try {
-      console.log('🚀 Form submitted with data:', data)
-
       // Clear any previous validation errors
       setValidationError(null)
 
@@ -212,16 +210,7 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       const hasCloserAssignedValue = data.closer_assigned && data.closer_assigned !== 'Unassigned'
       const hasCSMAssignedValue = data.assigned_csm && data.assigned_csm !== 'N/A'
 
-      console.log('👥 Team validation:', { hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue })
-
       const assignedCount = [hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue].filter(Boolean).length
-
-      // Allow saving without team members (they can be assigned later)
-      // if (assignedCount === 0) {
-      //   console.log('❌ Validation failed: No team member assigned')
-      //   setValidationError('Please assign at least one team member (Setter, Closer, or CSM)')
-      //   return
-      // }
 
       // Validation: If CSM is assigned with Setter/Closer, must be Service Upgrade
       if (hasCSMAssignedValue && (hasSetterAssignedValue || hasCloserAssignedValue)) {
@@ -270,14 +259,6 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
         const day = String(data.payment_date.getDate()).padStart(2, '0')
         const formattedDate = `${year}-${month}-${day}`
 
-        console.log('🗓️ DATE DEBUG:')
-        console.log('  - Original payment_date from DB:', payment.payment_date)
-        console.log('  - data.payment_date object:', data.payment_date)
-        console.log('  - getFullYear():', year)
-        console.log('  - getMonth()+1:', month)
-        console.log('  - getDate():', day)
-        console.log('  - Final formattedDate:', formattedDate)
-
         const updateData = {
           amount: parseFloat(data.amount),
           payment_date: formattedDate,
@@ -296,14 +277,11 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
           whop_account_username: payment.whop_account_username || null
         }
 
-        console.log('📝 Updating payment with data:', updateData)
-
         await updatePayment.mutateAsync({
           id: payment.id,
           updates: updateData
         })
 
-        console.log('✅ Payment updated successfully')
         paymentId = payment.id
       } else {
         // Generate unique IDs if not provided

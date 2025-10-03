@@ -728,15 +728,12 @@ export default function CommissionsPage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
-                            console.log('Edit button clicked for payment:', payment.id)
-                            console.log('Current states - showPaymentForm:', showPaymentForm, 'viewingPayment:', !!viewingPayment)
                             // Cerrar el dialog de viewing si está abierto
                             setViewingPayment(undefined)
                             // Esperar un tick para que se cierre el otro dialog
                             setTimeout(() => {
                               setEditingPayment(payment)
                               setShowPaymentForm(true)
-                              console.log('Opening edit form for:', payment.id)
                             }, 0)
                           }}
                           className="hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 dark:hover:text-orange-400"
