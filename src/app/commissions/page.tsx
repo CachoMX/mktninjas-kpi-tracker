@@ -708,7 +708,10 @@ export default function CommissionsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setViewingPayment(payment)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setViewingPayment(payment)
+                          }}
                           className="hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                         >
                           <Eye className="w-4 h-4" />
@@ -716,7 +719,9 @@ export default function CommissionsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            console.log('Edit button clicked for payment:', payment.id)
                             setEditingPayment(payment)
                             setShowPaymentForm(true)
                           }}
@@ -727,7 +732,10 @@ export default function CommissionsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeletePayment(payment)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeletePayment(payment)
+                          }}
                           disabled={deletePayment.isPending}
                           className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         >
