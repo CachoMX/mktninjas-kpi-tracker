@@ -207,7 +207,7 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       // Clear any previous validation errors
       setValidationError(null)
 
-      // Validation: At least one team member must be assigned
+      // Validation: At least one team member must be assigned (REMOVED - allow unassigned payments from Whop)
       const hasSetterAssignedValue = data.setter_assigned && data.setter_assigned !== 'Unassigned'
       const hasCloserAssignedValue = data.closer_assigned && data.closer_assigned !== 'Unassigned'
       const hasCSMAssignedValue = data.assigned_csm && data.assigned_csm !== 'N/A'
@@ -216,11 +216,12 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
 
       const assignedCount = [hasSetterAssignedValue, hasCloserAssignedValue, hasCSMAssignedValue].filter(Boolean).length
 
-      if (assignedCount === 0) {
-        console.log('❌ Validation failed: No team member assigned')
-        setValidationError('Please assign at least one team member (Setter, Closer, or CSM)')
-        return
-      }
+      // Allow saving without team members (they can be assigned later)
+      // if (assignedCount === 0) {
+      //   console.log('❌ Validation failed: No team member assigned')
+      //   setValidationError('Please assign at least one team member (Setter, Closer, or CSM)')
+      //   return
+      // }
 
       // Validation: If CSM is assigned with Setter/Closer, must be Service Upgrade
       if (hasCSMAssignedValue && (hasSetterAssignedValue || hasCloserAssignedValue)) {
