@@ -253,9 +253,15 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       let paymentId: number | undefined
 
       if (payment?.id) {
+        // Format date manually to avoid timezone conversion issues
+        const year = data.payment_date.getFullYear()
+        const month = String(data.payment_date.getMonth() + 1).padStart(2, '0')
+        const day = String(data.payment_date.getDate()).padStart(2, '0')
+        const formattedDate = `${year}-${month}-${day}`
+
         const updateData = {
           amount: parseFloat(data.amount),
-          payment_date: format(data.payment_date, 'yyyy-MM-dd'),
+          payment_date: formattedDate,
           payment_type: data.payment_type,
           deal_type_id: data.deal_type_id,
           setter_assigned: data.setter_assigned || null,
@@ -283,11 +289,18 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       } else {
         // Generate unique IDs if not provided
         const timestamp = Date.now()
+
+        // Format date manually to avoid timezone conversion issues
+        const year = data.payment_date.getFullYear()
+        const month = String(data.payment_date.getMonth() + 1).padStart(2, '0')
+        const day = String(data.payment_date.getDate()).padStart(2, '0')
+        const formattedDate = `${year}-${month}-${day}`
+
         const insertData = {
           whop_payment_id: data.whop_payment_id || `AUTO-${timestamp}`,
           whop_user_id: data.whop_user_id || `USER-${timestamp}`,
           amount: parseFloat(data.amount),
-          payment_date: format(data.payment_date, 'yyyy-MM-dd'),
+          payment_date: formattedDate,
           payment_type: data.payment_type,
           deal_type_id: data.deal_type_id,
           billing_full_name: data.billing_full_name || '',
