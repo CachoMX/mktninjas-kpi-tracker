@@ -121,11 +121,15 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
     if (open) {
       if (payment) {
         // Editing existing payment
+        // Parse date without timezone conversion to avoid losing a day
+        const [year, month, day] = payment.payment_date.split('-').map(Number)
+        const localDate = new Date(year, month - 1, day)
+
         reset({
           whop_payment_id: payment.whop_payment_id,
           whop_user_id: payment.whop_user_id,
           amount: payment.amount.toString(),
-          payment_date: new Date(payment.payment_date),
+          payment_date: localDate,
           payment_type: payment.payment_type || 'New Deal',
           deal_type_id: payment.deal_type_id,
           billing_full_name: payment.billing_full_name,
