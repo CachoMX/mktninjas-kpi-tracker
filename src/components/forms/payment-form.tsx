@@ -262,7 +262,9 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
           whop_payment_id: payment.whop_payment_id,
           whop_user_id: payment.whop_user_id || `USER-${payment.whop_payment_id}`,
           billing_full_name: payment.billing_full_name,
-          email: payment.email
+          email: payment.email,
+          whop_account_name: payment.whop_account_name || null,
+          whop_account_username: payment.whop_account_username || null
         }
 
         console.log('📝 Updating payment with data:', updateData)
@@ -286,6 +288,8 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
           deal_type_id: data.deal_type_id,
           billing_full_name: data.billing_full_name || '',
           email: data.email || '',
+          whop_account_name: null,
+          whop_account_username: null,
           setter_assigned: data.setter_assigned || null,
           closer_assigned: data.closer_assigned || null,
           service_agreement_status: data.service_agreement_status,
