@@ -122,8 +122,11 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
       if (payment) {
         // Editing existing payment
         // Parse date without timezone conversion to avoid losing a day
-        const [year, month, day] = payment.payment_date.split('-').map(Number)
-        const localDate = new Date(year, month - 1, day)
+        // Extract just the date part (YYYY-MM-DD) from the ISO string or date string
+        const dateString = payment.payment_date.split('T')[0] // Remove time portion if present
+        const [year, month, day] = dateString.split('-').map(Number)
+        // Set to noon to avoid timezone issues
+        const localDate = new Date(year, month - 1, day, 12, 0, 0)
 
         reset({
           whop_payment_id: payment.whop_payment_id,
