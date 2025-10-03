@@ -35,6 +35,13 @@ import { cn } from '@/lib/utils'
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
+// Helper function to parse date string without timezone conversion
+function parseLocalDate(dateString: string): Date {
+  const dateOnly = dateString.split('T')[0]
+  const [year, month, day] = dateOnly.split('-').map(Number)
+  return new Date(year, month - 1, day, 12, 0, 0)
+}
+
 interface PaymentWithCommission extends PaymentWithDealType {
   commission_calculations?: {
     closer_commission: number
@@ -585,7 +592,7 @@ export default function CommissionsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(payment.payment_date), 'MMM dd, yyyy')}
+                      {format(parseLocalDate(payment.payment_date), 'MMM dd, yyyy')}
                     </TableCell>
                     <TableCell>
                       <span className="font-mono font-bold text-lg text-green-600 dark:text-green-400">
@@ -802,7 +809,7 @@ export default function CommissionsPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Payment Date</label>
-                  <p>{format(new Date(viewingPayment.payment_date), 'PPP')}</p>
+                  <p>{format(parseLocalDate(viewingPayment.payment_date), 'PPP')}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Payment Type</label>
@@ -832,7 +839,7 @@ export default function CommissionsPage() {
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <label className="text-xs font-medium text-muted-foreground">Parent Payment Date</label>
-                      <p className="font-medium">{format(new Date(parentPayment.payment_date), 'MMM dd, yyyy')}</p>
+                      <p className="font-medium">{format(parseLocalDate(parentPayment.payment_date), 'MMM dd, yyyy')}</p>
                     </div>
                     <div>
                       <label className="text-xs font-medium text-muted-foreground">Parent Amount</label>

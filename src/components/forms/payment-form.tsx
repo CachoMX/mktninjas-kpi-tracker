@@ -19,6 +19,13 @@ import { Payment, ServiceAgreementStatus, CSMName, PaymentType } from '@/types/d
 import { useTeamMembers, useDealTypes, useCSMs, useCreatePayment, useUpdatePayment, usePayments } from '@/hooks/use-commission-data'
 import { CommissionCalculator } from '@/lib/commission-calculator'
 
+// Helper function to parse date string without timezone conversion
+function parseLocalDate(dateString: string): Date {
+  const dateOnly = dateString.split('T')[0]
+  const [year, month, day] = dateOnly.split('-').map(Number)
+  return new Date(year, month - 1, day, 12, 0, 0)
+}
+
 const paymentSchema = z.object({
   whop_payment_id: z.string().optional(),
   whop_user_id: z.string().optional(),
@@ -501,7 +508,7 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
                         const teamMember = parentPayment.closer_assigned || parentPayment.setter_assigned || parentPayment.assigned_csm
                         return (
                           <SelectItem key={parentPayment.id} value={parentPayment.id.toString()}>
-                            {format(new Date(parentPayment.payment_date), 'MMM dd, yyyy')} -
+                            {format(parseLocalDate(parentPayment.payment_date), 'MMM dd, yyyy')} -
                             ${parentPayment.amount} -
                             {parentDealType?.display_name} -
                             {teamMember}
