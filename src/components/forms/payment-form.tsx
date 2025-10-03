@@ -259,6 +259,14 @@ export function PaymentForm({ open, onOpenChange, payment, onSuccess }: PaymentF
         const day = String(data.payment_date.getDate()).padStart(2, '0')
         const formattedDate = `${year}-${month}-${day}`
 
+        console.log('🗓️ DATE DEBUG:')
+        console.log('  - Original payment_date from DB:', payment.payment_date)
+        console.log('  - data.payment_date object:', data.payment_date)
+        console.log('  - getFullYear():', year)
+        console.log('  - getMonth()+1:', month)
+        console.log('  - getDate():', day)
+        console.log('  - Final formattedDate:', formattedDate)
+
         const updateData = {
           amount: parseFloat(data.amount),
           payment_date: formattedDate,
